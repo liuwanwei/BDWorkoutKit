@@ -44,13 +44,6 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
                 sSharedInstance->_internalWorkoutResults = [[NSMutableArray alloc] init];
             }
             
-//            // 初始化训练单元描述信息
-//            NSDictionary * rootDict = [Utils loadJsonFileFromBundel:@"Workouts-Girl"];
-//            if (rootDict) {
-//                NSArray * dicts = rootDict[@"workouts"];
-//                sSharedInstance->_workoutUnits = [Workout objectArrayWithKeyValuesArray:dicts];
-//            }
-            
             // 初始化 iCloud 数据管理对象
             sSharedInstance->_cloudManager = [WorkoutCloudManager sharedInstance];
             sSharedInstance->_cloudManager.delegate = sSharedInstance;

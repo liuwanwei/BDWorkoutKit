@@ -17,5 +17,6 @@
 @property (nonatomic, copy) NSString * equipment;
 @property (nonatomic, copy) NSString * detailsBundleFile;
 @property (nonatomic, copy) NSString * headerImage;
+@property (nonatomic, copy) NSString * briefDescription;
 
 @end
