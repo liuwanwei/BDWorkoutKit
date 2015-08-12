@@ -200,4 +200,30 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     }
 }
 
+- (void)resetCurrentHittType {
+    NSArray * types;
+    
+    NSDictionary * rootDict = [Utils loadJsonFileFromBundel:@"HiitType"];
+    if (rootDict) {
+        NSArray * dicts = rootDict[@"types"];
+        types = [HiitType objectArrayWithKeyValuesArray:dicts];
+    }
+    
+    for (HiitType * type in types) {
+        if ([type.objectId isEqualToNumber:[AppSetting sharedInstance].hiitType]) {
+            _currentHiitType = type;
+            
+            break;
+        }
+    }
+}
+
+- (void)resetWorkoutUnits {
+    NSDictionary * rootDict = [Utils loadJsonFileFromBundel:_currentHiitType.configFile];
+    if (rootDict) {
+        NSArray * dicts = rootDict[@"workouts"];
+        _workoutUnits = [Workout objectArrayWithKeyValuesArray:dicts];
+    }
+}
+
 @end

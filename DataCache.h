@@ -13,7 +13,7 @@
 
 @interface DataCache : NSObject <WorkoutiCloudDelegate>
 
-@property (nonatomic, strong, readonly) NSArray * daiylWeights;
+//@property (nonatomic, strong, readonly) NSArray * daiylWeights;
 @property (nonatomic, strong, readonly) NSArray * workoutResults;
 
 /**
@@ -21,6 +21,10 @@
  */
 @property (nonatomic, strong, readonly) NSArray * workoutUnits;
 
+/**
+ * HIIT 训练方法
+ */
+@property (nonatomic, strong, readonly) HiitType * currentHiitType;
 
 + (instancetype)sharedInstance;
 
@@ -52,5 +56,9 @@
 
 - (void)makeTestWorkoutResults;
 - (void)makeAndSaveWorkoutResultToCloud;
+
+// HIIT 训练 App 使用
+- (void)resetCurrentHittType;
+- (void)resetWorkoutUnits;
 
 @end
