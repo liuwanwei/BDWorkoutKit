@@ -18,6 +18,7 @@ static NSString * const NotificationTime = @"notificationTime";
 static NSString * const MuteSwitchOn = @"muteSwitchOn";
 static NSString * const VoiceType = @"voiceType";
 static NSString * const MusicName = @"musicName";
+static NSString * const HiitType = @"hiitType";
 
 @implementation AppSetting
 
@@ -47,18 +48,15 @@ static NSString * const MusicName = @"musicName";
         _muteSwitchOn = @(NO);
         _voiceType = @(PromptVoiceTypeGirl);
         _musicName = @"轻快.mp3";
+        _hiitType = @(HiitTypeFemaleElementary);
     }
     
     return self;
 }
 
 - (void)registeriCloudSynchronizeService{
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(iCloudStoreDidChange:)
-                                                 name:NSUbiquitousKeyValueStoreDidChangeExternallyNotification
-                                               object:[NSUbiquitousKeyValueStore defaultStore]];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(iCloudStoreDidChange:) name:NSUbiquitousKeyValueStoreDidChangeExternallyNotification object:[NSUbiquitousKeyValueStore defaultStore]];
     
-    [[NSUbiquitousKeyValueStore defaultStore] setString:@"fixed" forKey:@"testKey"];
     [[NSUbiquitousKeyValueStore defaultStore] synchronize];
 }
 
@@ -75,34 +73,35 @@ static NSString * const MusicName = @"musicName";
     
     BOOL resetNotification = NO;
     id value;
-    if (( value = [userInfo objectForKey:NotificationOn]) != nil) {
+    if (( value = [userInfo valueForKey:NotificationOn]) != nil) {
         if (![self.notificationOn isEqualToValue:value]) {
             self.notificationOn = (NSNumber *)value;
             resetNotification = YES;
         }
         
-    }else if(( value = [userInfo objectForKey:NotificationText]) != nil){
+    }else if(( value = [userInfo valueForKey:NotificationText]) != nil){
         if (![self.notificationText isEqualToString:value]) {
             self.notificationText = (NSString *)value;
             resetNotification = YES;
         }
         
-    }else if(( value = [userInfo objectForKey:NotificationTime]) != nil){
+    }else if(( value = [userInfo valueForKey:NotificationTime]) != nil){
         if (![self.notificationTime isEqualToDate:value]) {
             self.notificationTime = (NSDate *)value;
             resetNotification = YES;
         }
         
-    }else if(( value = [userInfo objectForKey:MuteSwitchOn]) != nil){
+    }else if(( value = [userInfo valueForKey:MuteSwitchOn]) != nil){
         self.muteSwitchOn = (NSNumber *)value;
-    }else if(( value = [userInfo objectForKey:VoiceType]) != nil){
+    }else if(( value = [userInfo valueForKey:VoiceType]) != nil){
         self.voiceType = (NSNumber *)value;
-    }else if(( value = [userInfo objectForKey:MusicName]) != nil){
+    }else if(( value = [userInfo valueForKey:MusicName]) != nil){
         self.musicName = (NSString *)value;
+    }else if ((value = [userInfo valueForKey:HiitType]) != nil){
+        self.hiitType = (NSNumber *)value;
     }
     
     if (resetNotification) {
-        // 重新部署本地通知
         [self startNotification];
     }
     
@@ -112,19 +111,15 @@ static NSString * const MusicName = @"musicName";
 - (void)syncDataToDisk{
     [[TMDiskCache sharedCache] setObject:self forKey:AppSettingKey];
     
-    NSUbiquitousKeyValueStore * store = [NSUbiquitousKeyValueStore defaultStore];
-    [self _safelysetObject:_notificationOn forKey:NotificationOn forStore:store];
-    [self _safelysetObject:_notificationText forKey:NotificationText forStore:store];
-    [self _safelysetObject:_notificationTime forKey:NotificationTime forStore:store];
-    [self _safelysetObject:_muteSwitchOn forKey:MuteSwitchOn forStore:store];
-    [self _safelysetObject:_voiceType forKey:VoiceType forStore:store];
-    [self _safelysetObject:_musicName forKey:MusicName forStore:store];
-}
-
-- (void)_safelysetObject:(id)object forKey:(NSString *)key forStore:(NSUbiquitousKeyValueStore *)store{
-    if (object && key && key.length > 0) {
-        [store setObject:object forKey:key];
-    }
+    // 存储到 iCloud 中
+//    NSUbiquitousKeyValueStore * store = [NSUbiquitousKeyValueStore defaultStore];
+//    [store setValue:_notificationOn forKey:NotificationOn];
+//    [store setValue:_notificationText forKey:NotificationText];
+//    [store setValue:_notificationTime forKey:NotificationTime];
+//    [store setValue:_muteSwitchOn forKey:MuteSwitchOn];
+//    [store setValue:_voiceType forKey:VoiceType];
+//    [store setValue:_musicName forKey:MusicName];
+//    [store setValue:_hiitType forKey:HiitType];
 }
 
 - (void)startNotification{

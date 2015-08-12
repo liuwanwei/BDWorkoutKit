@@ -25,6 +25,8 @@ extern const void *  AssociatedWorkoutResult;
  */
 @property (nonatomic, strong) NSNumber * consumedTime;
 
+@property (nonatomic, strong) NSString * workoutTitle;
+
 /**
  *  训练过程中总共暂停了几次，不计时间，只要按下暂停就算一次
  */

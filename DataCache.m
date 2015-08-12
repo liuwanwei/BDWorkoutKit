@@ -10,6 +10,7 @@
 #import "Workout.h"
 #import "WorkoutResult.h"
 #import "BDFoundation.h"
+#import "AppSetting.h"
 #import "WorkoutCloudManager.h"
 #import <TMCache.h>
 #import <DateTools.h>
