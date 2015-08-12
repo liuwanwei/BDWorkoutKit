@@ -15,7 +15,7 @@ typedef enum{
 }PromptVoiceType;
 
 typedef enum{
-    HiitTypeFemaleElementary = 0,
+    HiitTypeGirlElementary = 0,
     HiitTypeJumpRope = 1
 }WorkoutHiitType;
 

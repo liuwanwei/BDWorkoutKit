@@ -44,15 +44,23 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
                 sSharedInstance->_internalWorkoutResults = [[NSMutableArray alloc] init];
             }
             
-            // 初始化训练单元描述信息
-            NSDictionary * rootDict = [Utils loadJsonFileFromBundel:@"Workouts"];
-            if (rootDict) {
-                NSArray * dicts = rootDict[@"workouts"];
-                sSharedInstance->_workoutUnits = [Workout objectArrayWithKeyValuesArray:dicts];
-            }
+//            // 初始化训练单元描述信息
+//            NSDictionary * rootDict = [Utils loadJsonFileFromBundel:@"Workouts-Girl"];
+//            if (rootDict) {
+//                NSArray * dicts = rootDict[@"workouts"];
+//                sSharedInstance->_workoutUnits = [Workout objectArrayWithKeyValuesArray:dicts];
+//            }
             
+            // 初始化 iCloud 数据管理对象
             sSharedInstance->_cloudManager = [WorkoutCloudManager sharedInstance];
             sSharedInstance->_cloudManager.delegate = sSharedInstance;
+            
+            // 初始化默认训练方案
+            [sSharedInstance resetCurrentHittType];
+            
+            // 初始化训练单元描述信息
+            [sSharedInstance resetWorkoutUnits];
+            
         }
     });
     
@@ -204,7 +212,7 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
 - (void)resetCurrentHittType {
     NSArray * types;
     
-    NSDictionary * rootDict = [Utils loadJsonFileFromBundel:@"HiitType"];
+    NSDictionary * rootDict = [Utils loadJsonFileFromBundel:@"HiitTypes"];
     if (rootDict) {
         NSArray * dicts = rootDict[@"types"];
         types = [HiitType objectArrayWithKeyValuesArray:dicts];

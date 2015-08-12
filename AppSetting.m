@@ -48,7 +48,7 @@ static NSString * const HiitType = @"hiitType";
         _muteSwitchOn = @(NO);
         _voiceType = @(PromptVoiceTypeGirl);
         _musicName = @"轻快.mp3";
-        _hiitType = @(HiitTypeFemaleElementary);
+        _hiitType = @(HiitTypeGirlElementary);
     }
     
     return self;
