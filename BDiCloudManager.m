@@ -6,25 +6,24 @@
 //  Copyright (c) 2015年 maoyu. All rights reserved.
 //
 
-#import "WorkoutCloudManager.h"
+#import "BDiCloudManager.h"
 #import "WorkoutResult.h"
-#import "DataCache.h"
 #import <EXTScope.h>
 
 static NSString * const AllRecords = @"TRUEPREDICATE";
 
-@implementation WorkoutCloudManager{
+@implementation BDiCloudManager{
     __weak CKContainer * _container;
     __weak CKDatabase * _privateDatabase;
 }
 
 + (instancetype)sharedInstance{
-    static WorkoutCloudManager * sInstance = nil;
+    static BDiCloudManager * sInstance = nil;
     
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (sInstance == nil) {
-            sInstance = [[WorkoutCloudManager alloc] init];
+            sInstance = [[BDiCloudManager alloc] init];
         }
     });
     
@@ -44,7 +43,7 @@ static NSString * const AllRecords = @"TRUEPREDICATE";
 /**
  *  从 iCloud CloudKit 服务查询所有训练结果
  */
-- (void)queryAllRecords{
+- (void)queryRecordsWithType:(NSString *)recordType{
     @weakify(self);
     
     [_container accountStatusWithCompletionHandler:^(CKAccountStatus accountStatus, NSError * error){
@@ -52,7 +51,7 @@ static NSString * const AllRecords = @"TRUEPREDICATE";
         if (accountStatus == CKAccountStatusAvailable) {
             // 设备账号的 iCloud 服务可用，查询所有数据
             NSPredicate * predict = [NSPredicate predicateWithValue:YES];
-            CKQuery * query = [[CKQuery alloc] initWithRecordType:RecordTypeWorkoutResult predicate:predict];
+            CKQuery * query = [[CKQuery alloc] initWithRecordType:recordType predicate:predict];
             
             [_privateDatabase performQuery:query  inZoneWithID:nil completionHandler:^(NSArray * results, NSError * error){
                 

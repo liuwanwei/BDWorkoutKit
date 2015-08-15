@@ -9,20 +9,20 @@
 #import <Foundation/Foundation.h>
 #import <CloudKit/CloudKit.h>
 
-@protocol WorkoutiCloudDelegate <NSObject>
+@protocol BDiCloudDelegate <NSObject>
 
 - (void)successfullySavedRecord:(CKRecord *)record;
 - (void)didReceiveWorkoutResults:(NSArray *)results;
 
 @end
 
-@interface WorkoutCloudManager : NSObject
+@interface BDiCloudManager : NSObject
 
-@property (nonatomic, assign) id<WorkoutiCloudDelegate> delegate;
+@property (nonatomic, assign) id<BDiCloudDelegate> delegate;
 
 + (instancetype)sharedInstance;
 
-- (void)queryAllRecords;
+- (void)queryRecordsWithType:(NSString *)recordType;
 - (void)addRecord:(CKRecord *)record;
 
 @end

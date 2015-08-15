@@ -10,7 +10,7 @@
 #import "Workout.h"
 #import "WorkoutResult.h"
 #import "BDFoundation.h"
-#import "WorkoutCloudManager.h"
+#import "BDiCloudManager.h"
 #import <TMCache.h>
 #import <DateTools.h>
 #import <MJExtension.h>
@@ -22,7 +22,7 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
 
 @implementation DataCache{
     NSMutableArray * _internalWorkoutResults;
-    __weak WorkoutCloudManager * _cloudManager;
+    __weak BDiCloudManager * _cloudManager;
 }
 
 + (instancetype)sharedInstance{
@@ -50,7 +50,7 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
                 sSharedInstance->_workoutUnits = [Workout objectArrayWithKeyValuesArray:dicts];
             }
             
-            sSharedInstance->_cloudManager = [WorkoutCloudManager sharedInstance];
+            sSharedInstance->_cloudManager = [BDiCloudManager sharedInstance];
             sSharedInstance->_cloudManager.delegate = sSharedInstance;
         }
     });
@@ -59,7 +59,7 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
 }
 
 - (void)queryICloudWorkoutRecords{
-    [_cloudManager queryAllRecords];
+    [_cloudManager queryRecordsWithType:RecordTypeWorkoutResult];
 
 }
 

@@ -7,11 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "WorkoutCloudManager.h"
+#import "BDiCloudManager.h"
 
 @class WorkoutResult;
 
-@interface DataCache : NSObject <WorkoutiCloudDelegate>
+@interface DataCache : NSObject <BDiCloudDelegate>
 
 @property (nonatomic, strong, readonly) NSArray * daiylWeights;
 @property (nonatomic, strong, readonly) NSArray * workoutResults;
