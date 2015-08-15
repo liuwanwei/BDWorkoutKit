@@ -11,6 +11,7 @@
 #import "WorkoutResult.h"
 #import "BDFoundation.h"
 #import "BDiCloudManager.h"
+#import "WorkoutAppSetting.h"
 #import <TMCache.h>
 #import <DateTools.h>
 #import <MJExtension.h>
@@ -43,15 +44,15 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
                 sSharedInstance->_internalWorkoutResults = [[NSMutableArray alloc] init];
             }
             
-            // 初始化训练单元描述信息
-            NSDictionary * rootDict = [Utils loadJsonFileFromBundel:@"Workouts"];
-            if (rootDict) {
-                NSArray * dicts = rootDict[@"workouts"];
-                sSharedInstance->_workoutUnits = [Workout objectArrayWithKeyValuesArray:dicts];
-            }
-            
             sSharedInstance->_cloudManager = [BDiCloudManager sharedInstance];
             sSharedInstance->_cloudManager.delegate = sSharedInstance;
+            
+            // 初始化默认训练方案
+            [sSharedInstance resetCurrentHittType];
+            
+            // 初始化训练单元描述信息
+            [sSharedInstance resetWorkoutUnits];
+            
         }
     });
     
@@ -197,6 +198,32 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
         workoutResult.savedToICloud = @(YES);
         
         [self syncDataToDisk];
+    }
+}
+
+- (void)resetCurrentHittType {
+    NSArray * types;
+    
+    NSDictionary * rootDict = [Utils loadJsonFileFromBundel:@"HiitTypes"];
+    if (rootDict) {
+        NSArray * dicts = rootDict[@"types"];
+        types = [HiitType objectArrayWithKeyValuesArray:dicts];
+    }
+    
+    for (HiitType * type in types) {
+        if ([type.objectId isEqualToNumber:[WorkoutAppSetting sharedInstance].hiitType]) {
+            _currentHiitType = type;
+            
+            break;
+        }
+    }
+}
+
+- (void)resetWorkoutUnits {
+    NSDictionary * rootDict = [Utils loadJsonFileFromBundel:_currentHiitType.configFile];
+    if (rootDict) {
+        NSArray * dicts = rootDict[@"workouts"];
+        _workoutUnits = [Workout objectArrayWithKeyValuesArray:dicts];
     }
 }
 
