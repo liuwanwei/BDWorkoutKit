@@ -53,7 +53,7 @@ static NSString * const UnitResults = @"unitResults";
     [record setObject:self.pausedTimes forKey:PausedTimes];
     [record setObject:self.unitResults forKey:UnitResults];
     
-    objc_setAssociatedObject(record, AssociatedWorkoutResult, self, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(record, AssociatedWorkoutResult, self, OBJC_ASSOCIATION_ASSIGN);
     
     return record;
 }
