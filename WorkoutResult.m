@@ -9,7 +9,7 @@
 #import "WorkoutResult.h"
 #import <objc/runtime.h>
 
-NSInteger MaxWorkoutUnitCount = 12;
+NSInteger MaxWorkoutUnitCount = 18;
 
 NSString * const RecordTypeWorkoutResult = @"WorkoutResult";
 const void * AssociatedWorkoutResult = "AssociatedWorkoutResult";
@@ -25,6 +25,9 @@ static NSString * const UnitResults = @"unitResults";
     if (self = [super initWithUUID]) {
         // 初始化训练单元完成状态
         _unitResults = [[NSMutableData alloc] initWithLength:MaxWorkoutUnitCount];
+        for (NSInteger index = 0; index < MaxWorkoutUnitCount; index++) {
+            [self addResult:NO forUnit:index];
+        }
     }
     
     return self;
@@ -61,8 +64,8 @@ static NSString * const UnitResults = @"unitResults";
 
 - (BOOL)addResult:(BOOL)result forUnit:(NSInteger)unitIndex{
     if (unitIndex < MaxWorkoutUnitCount) {
-        uint8_t * bytes = (uint8_t *)_unitResults.bytes;
-        bytes[unitIndex] = (uint8_t)result;
+        uint16_t * bytes = (uint16_t *)_unitResults.bytes;
+        bytes[unitIndex] = (uint16_t)result;
         
         return YES;
     }else{
@@ -72,7 +75,7 @@ static NSString * const UnitResults = @"unitResults";
 
 - (BOOL)resultForUnit:(NSInteger)unitIndex{
     if (unitIndex < MaxWorkoutUnitCount) {
-        uint8_t * bytes = (uint8_t *)_unitResults.bytes;
+        uint16_t * bytes = (uint16_t *)_unitResults.bytes;
         return (BOOL)bytes[unitIndex];
     }else{
         [NSException raise:@"获取训练单元结果失败" format:@"训练单元序号越界 %@", @(unitIndex)];
