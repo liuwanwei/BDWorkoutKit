@@ -9,7 +9,7 @@
 #import "WorkoutResult.h"
 #import <objc/runtime.h>
 
-NSInteger MaxWorkoutUnitCount = 18;
+NSInteger MaxWorkoutUnitCount = 1024;
 
 NSString * const RecordTypeWorkoutResult = @"WorkoutResult";
 const void * AssociatedWorkoutResult = "AssociatedWorkoutResult";

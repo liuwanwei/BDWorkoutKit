@@ -16,7 +16,7 @@ extern const void *  AssociatedWorkoutResult;
 @interface WorkoutResult : BaseModel
 
 /**
- *  锻炼开始时间
+ *  锻炼开始日期时间
  */
 @property (nonatomic, strong) NSDate * workoutTime;
 
@@ -25,6 +25,9 @@ extern const void *  AssociatedWorkoutResult;
  */
 @property (nonatomic, strong) NSNumber * consumedTime;
 
+/**
+ * 训练方案的名字
+ */
 @property (nonatomic, strong) NSString * workoutTitle;
 
 /**
