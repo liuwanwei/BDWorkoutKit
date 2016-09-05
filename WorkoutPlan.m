@@ -10,4 +10,9 @@
 
 @implementation WorkoutPlan
 
+- (CKRecord *)iCloudRecordObject{
+    // TODO: 返回桥梁性质的 CKRecord 对象
+    return nil;
+}
+
 @end

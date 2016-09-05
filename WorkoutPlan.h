@@ -8,6 +8,7 @@
 //
 
 #import "BaseModel.h"
+#import <CloudKit/CloudKit.h>
 
 typedef enum{
     PlanTypeBuiltIn     = 0,
@@ -40,5 +41,7 @@ typedef enum{
 
 // 训练方案的整体描述文件名字，如：desc-hiit-girl-primary.txt
 @property (nonatomic, copy) NSString * detailsBundleFile;
+
+- (CKRecord *)iCloudRecordObject;
 
 @end

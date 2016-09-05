@@ -20,9 +20,11 @@
 
 
 static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
+static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 
 @implementation DataCache{
     NSMutableArray * _internalWorkoutResults;
+    NSMutableArray * _internalWorkoutUnits;
     __weak BDiCloudManager * _cloudManager;
 }
 
@@ -33,30 +35,49 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
         if (sSharedInstance == nil) {
             sSharedInstance = [[DataCache alloc] init];
             
-            // 初始化数据
-            TMDiskCache * cache = [TMDiskCache sharedCache];
+            [sSharedInstance loadWorkoutResults];
+            [sSharedInstance loadWorkoutUnits];
             
-            // 初始化训练记录数据
-            NSArray * temp = (NSArray *)[cache objectForKey:WorkoutResultsKey];
-            if (temp) {
-                sSharedInstance->_internalWorkoutResults = [temp mutableCopy];
-            }else{
-                sSharedInstance->_internalWorkoutResults = [[NSMutableArray alloc] init];
-            }
+            [sSharedInstance initCloudManager];
             
-            sSharedInstance->_cloudManager = [BDiCloudManager sharedInstance];
-            sSharedInstance->_cloudManager.delegate = sSharedInstance;
+            // 初始化当前训练方案
+            [sSharedInstance resetWorkoutPlan];
             
-            // 初始化默认训练方案
-            [sSharedInstance resetCurrentHittType];
-            
-            // 初始化训练单元描述信息
+            // 初始化当前训练单元
             [sSharedInstance resetWorkoutUnits];
             
         }
     });
     
     return sSharedInstance;
+}
+
+// 从本地加载训练结果
+- (void)loadWorkoutResults{
+    TMDiskCache * cache = [TMDiskCache sharedCache];
+    // 初始化训练记录数据
+    NSArray * temp = (NSArray *)[cache objectForKey:WorkoutResultsKey];
+    if (temp) {
+        _internalWorkoutResults = [temp mutableCopy];
+    }else{
+        _internalWorkoutResults = [[NSMutableArray alloc] init];
+    }
+}
+
+- (void)loadWorkoutUnits{
+    TMDiskCache * cache = [TMDiskCache sharedCache];
+    // 初始化训练记录数据
+    NSArray * temp = (NSArray *)[cache objectForKey:WorkoutUnitsKey];
+    if (temp) {
+        _internalWorkoutUnits = [temp mutableCopy];
+    }else{
+        _internalWorkoutUnits = [[NSMutableArray alloc] init];
+    }
+}
+
+- (void)initCloudManager{
+    _cloudManager = [BDiCloudManager sharedInstance];
+    _cloudManager.delegate = self;
 }
 
 - (void)queryICloudWorkoutRecords{
@@ -72,11 +93,15 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     }
 }
 
-- (void)syncDataToDisk{
+- (void)syncWorkoutUnitToDisk{
+    TMDiskCache * cache = [TMDiskCache sharedCache];
+    [cache setObject:_internalWorkoutUnits forKey:WorkoutUnitsKey];
+}
+
+- (void)syncWorkoutResultToDisk{
     TMDiskCache * cache = [TMDiskCache sharedCache];
     [cache setObject:_internalWorkoutResults forKey:WorkoutResultsKey];
 }
-
 
 /**
  *  函数特点请参考 dailyWeights
@@ -88,7 +113,7 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
 }
 
 - (BOOL)addWorkoutResult:(WorkoutResult *)workoutResult{
-    BOOL ret = [self cachingWorkoutResult:workoutResult];
+    BOOL ret = [self cacheWorkoutResult:workoutResult];
     if (ret) {
         [_cloudManager addRecord:[workoutResult iCloudRecordObject]];
     }
@@ -96,7 +121,7 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     return ret;
 }
 
-- (BOOL)cachingWorkoutResult:(WorkoutResult *)workoutResult{
+- (BOOL)cacheWorkoutResult:(WorkoutResult *)workoutResult{
     for (WorkoutResult * result in _internalWorkoutResults) {
         // 防止向缓存重复添加相同的记录
         if ([result.workoutTime isEqualToDate:workoutResult.workoutTime]) {
@@ -177,14 +202,14 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     for (CKRecord * ckRecord in results) {
         if ([ckRecord.recordType isEqualToString:RecordTypeWorkoutResult]) {
             WorkoutResult * workoutResult = [[WorkoutResult alloc] initWithICloudRecord:ckRecord];
-            if([self cachingWorkoutResult: workoutResult]){
+            if([self cacheWorkoutResult: workoutResult]){
                 changed = YES;
             }
         }
     }
     
     if (changed) {
-        [self syncDataToDisk];
+        [self syncWorkoutResultToDisk];
     }
     
     // 检查是否有未上传到 iCloud 中的数据
@@ -200,11 +225,11 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
         WorkoutResult * workoutResult = (WorkoutResult *)object;
         workoutResult.savedToICloud = @(YES);
         
-        [self syncDataToDisk];
+        [self syncWorkoutResultToDisk];
     }
 }
 
-- (void)resetCurrentHittType {
+- (void)resetWorkoutPlan {
     NSArray * types;
     
     NSDictionary * rootDict = [Utils loadJsonFileFromBundel:@"HiitTypes"];
