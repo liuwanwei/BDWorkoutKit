@@ -6,6 +6,18 @@
 //  Copyright © 2016年 maoyu. All rights reserved.
 //
 
+/*
+ * 获取内置训练方案（徒手初级、徒手中级，跳绳初级、跳绳中级）：
+ *      [[WorkoutPlanCache sharedInstance] builtInWorkoutPlans];
+ * 获取自定义训练方案：
+ *      [[WorkoutPlanCache sharedInstance] workoutPlans];
+ * 添加新的训练方案：
+ *      WorkoutPlan * plan = [[WorkoutPlanCache sharedInstance] newWorkoutPlan:PlanTypeHIIT];
+ *      ...
+ *      [[WorkoutPlanCache sharedInstance] addWorkoutPlan:plan];
+ *
+ */
+
 #import <Foundation/Foundation.h>
 #import "WorkoutPlan.h"
 
