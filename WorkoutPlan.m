@@ -15,4 +15,13 @@
     return nil;
 }
 
+- (BOOL)isBuiltInPlan{
+    NSInteger type = [self.type integerValue];
+    if (type != PlanTypeHIIT) {
+        return true;
+    }
+    
+    return false;
+}
+
 @end

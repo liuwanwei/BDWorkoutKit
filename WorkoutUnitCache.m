@@ -9,6 +9,7 @@
 #import "WorkoutUnitCache.h"
 #import "WorkoutUnit.h"
 #import "BDiCloudManager.h"
+#import "WorkoutPlan.h"
 #import <CloudKit/CloudKit.h>
 #import <TMCache.h>
 
@@ -117,5 +118,15 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     return true;
 }
 
+- (NSArray *)unitsForPlan:(WorkoutPlan *)plan{
+    NSMutableArray * units = [[NSMutableArray alloc] init];
+    for (WorkoutUnit * unit in _internalWorkoutUnits) {
+        if ([unit.workoutPlanId isEqualToNumber:plan.objectId]) {
+            [units addObject:unit];
+        }
+    }
+    
+    return [units copy];
+}
 
 @end

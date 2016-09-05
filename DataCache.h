@@ -32,7 +32,6 @@
 - (void)queryICloudWorkoutRecords;
 
 - (void)syncWorkoutResultToDisk;
-- (void)syncWorkoutUnitToDisk;
 
 /**
  *  添加训练记录，包括添加到本地缓存和 iCloud 两个步骤

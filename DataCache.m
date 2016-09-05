@@ -12,6 +12,8 @@
 #import "BDFoundation.h"
 #import "BDiCloudManager.h"
 #import "WorkoutAppSetting.h"
+#import "WorkoutPlanCache.h"
+#import "WorkoutUnitCache.h"
 #import <TMCache.h>
 #import <DateTools.h>
 #import <MJExtension.h>
@@ -213,28 +215,31 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 }
 
 - (void)resetWorkoutPlan {
-    NSArray * types;
-    
-    NSDictionary * rootDict = [Utils loadJsonFileFromBundel:@"HiitTypes"];
-    if (rootDict) {
-        NSArray * dicts = rootDict[@"types"];
-        types = [WorkoutPlan objectArrayWithKeyValuesArray:dicts];
+    NSNumber * selectedWorkoutPlan = [WorkoutAppSetting sharedInstance].workoutPlanId;
+    for (WorkoutPlan * plan in [WorkoutPlanCache builtInWorkoutPlans]) {
+        if ([plan.objectId isEqualToNumber: selectedWorkoutPlan]) {
+            _currentWorkoutPlan = plan;
+            return;
+        }
     }
     
-    NSNumber * selectedWorkoutPlan = [WorkoutAppSetting sharedInstance].workoutPlanId;
-    for (WorkoutPlan * type in types) {
-        if ([type.objectId isEqualToNumber: selectedWorkoutPlan]) {
-            _currentWorkoutPlan = type;
-            break;
+    for (WorkoutPlan * plan in [[WorkoutPlanCache sharedInstance] workoutPlans]) {
+        if ([plan.objectId isEqualToNumber: selectedWorkoutPlan]) {
+            _currentWorkoutPlan = plan;
+            return;
         }
     }
 }
 
 - (void)resetWorkoutUnits {
-    NSDictionary * rootDict = [Utils loadJsonFileFromBundel:_currentWorkoutPlan.configFile];
-    if (rootDict) {
-        NSArray * dicts = rootDict[@"workouts"];
-        _workoutUnits = [WorkoutUnit objectArrayWithKeyValuesArray:dicts];
+    if ([_currentWorkoutPlan isBuiltInPlan]) {
+        NSDictionary * rootDict = [Utils loadJsonFileFromBundel:_currentWorkoutPlan.configFile];
+        if (rootDict) {
+            NSArray * dicts = rootDict[@"workouts"];
+            _workoutUnits = [WorkoutUnit objectArrayWithKeyValuesArray:dicts];
+        }
+    }else{
+        _workoutUnits = [[WorkoutUnitCache sharedInstance] unitsForPlan:_currentWorkoutPlan];
     }
 }
 

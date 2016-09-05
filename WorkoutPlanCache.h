@@ -7,8 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
-@class WorkoutPlan;
+#import "WorkoutPlan.h"
 
 @interface WorkoutPlanCache : NSObject
 
@@ -16,6 +15,8 @@
 @property (nonatomic, strong, readonly) NSArray * workoutPlans;
 
 + (instancetype)sharedInstance;
+
++ (NSArray *)builtInWorkoutPlans;
 
 /**
  * 将训练数据写入磁盘缓存
@@ -28,7 +29,7 @@
  * 注意：新建训练方案必须使用这个接口，接口内部会为训练方案创建唯一 Id；
  * 创建完成后，请调用 addWorkoutPlan 保存新的训练方案。
  */
-- (WorkoutPlan *)newWorkoutPlan;
+- (WorkoutPlan *)newWorkoutPlan:(WorkoutPlanType)type;
 - (BOOL)addWorkoutPlan:(WorkoutPlan *)plan;
 - (BOOL)deleteWorkoutPlan:(WorkoutPlan *)plan;
 - (BOOL)updateWorkoutPlan:(WorkoutPlan *)plan;

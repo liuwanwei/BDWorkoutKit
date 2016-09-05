@@ -44,4 +44,6 @@ typedef enum{
 
 - (CKRecord *)iCloudRecordObject;
 
+- (BOOL)isBuiltInPlan;
+
 @end

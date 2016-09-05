@@ -9,6 +9,8 @@
 #import "WorkoutPlanCache.h"
 #import "WorkoutPlan.h"
 #import "BDiCloudManager.h"
+#import "BDFoundation.h"
+#import <MJExtension.h>
 #import <CloudKit/CloudKit.h>
 #import <TMCache.h>
 
@@ -34,6 +36,16 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     return sSharedInstance;
 }
 
+// 获取 App 内置的 4 种固定训练方案
++ (NSArray *)builtInWorkoutPlans{
+    NSDictionary * rootDict = [Utils loadJsonFileFromBundel:@"HiitTypes"];
+    if (rootDict) {
+        NSArray * dicts = rootDict[@"types"];
+        return [WorkoutPlan objectArrayWithKeyValuesArray:dicts];
+    }else{
+        return nil;
+    }
+}
 
 // 从本地加载自定义训练方案
 - (void)loadDiskCache{
@@ -58,8 +70,8 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     return [_internalWorkoutPlans copy];
 }
 
-- (WorkoutPlan *)newWorkoutPlan{
-    NSInteger maxId = 0;
+- (WorkoutPlan *)newWorkoutPlan:(WorkoutPlanType)type{
+    NSInteger maxId = 10; // 自定义训练方案 Id 从 10 开始
     for (WorkoutPlan * plan in _internalWorkoutPlans) {
         if ([plan.objectId integerValue] > maxId) {
             maxId = [plan.objectId integerValue];
@@ -69,6 +81,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     // 取现有最大 Id + 1 作为下一个训练方案的 objectId
     WorkoutPlan * plan = [[WorkoutPlan alloc] init];
     plan.objectId = @(maxId + 1);
+    plan.type = @(type);
     
     return plan;
 }
