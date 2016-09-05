@@ -11,15 +11,20 @@
 
 @interface WorkoutUnit : BaseModel
 
+// 内置训练方案中的训练单元序号
 @property (nonatomic, copy) NSString * objectId;
 
+// 标题，如：开合跳
+@property (nonatomic, copy) NSString * title;
 // 休息时长
 @property (nonatomic, copy) NSString * restTimeLength;
 // 锻炼时长
 @property (nonatomic, copy) NSString * workoutTimeLength;
+// 锻炼次数
+@property (nonatomic, strong) NSNumber * exerciseNumber;
 
-// 标题，如：开合跳
-@property (nonatomic, copy) NSString * title;
+// 所属训练方案的 Id，只有自定义训练单元有，内置的没有
+@property (nonatomic, copy) NSString * workoutPlanId;
 
 // 动作封面图
 @property (nonatomic, copy) NSString * profileBundleImage;

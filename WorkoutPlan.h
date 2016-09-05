@@ -9,9 +9,19 @@
 
 #import "BaseModel.h"
 
+typedef enum{
+    PlanTypeBuiltIn     = 0,
+    PlanTypeHIIT        = 1,
+    PlanTypeEquitment   = 2,
+    PlanTypeJumpRope    = 3,
+}WorkoutPlanType;
+
 @interface WorkoutPlan : BaseModel
 
 @property (nonatomic, copy) NSNumber * objectId;
+
+// 训练方案类型：0 内置，1 HIIT，2 器械 3 跳绳
+@property (nonatomic, copy) NSNumber * type;
 
 // 训练方案的名字，如：徒手训练·初级
 @property (nonatomic, copy) NSString * title;

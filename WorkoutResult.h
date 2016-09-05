@@ -40,6 +40,9 @@ extern const void *  AssociatedWorkoutResult;
  */
 @property (nonatomic, strong, readonly) NSData * unitResults;
 
+// 跳绳/锻炼总次数
+@property (nonatomic, strong) NSNumber * totalNumber;
+
 /**
  *  是否已经成功保存到了 iCloud 上
  */

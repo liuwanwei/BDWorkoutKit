@@ -18,7 +18,7 @@
 @property (nonatomic, strong, readonly) NSArray * workoutResults;
 
 /**
- *  十二个健身方法描述信息，Workout 类型
+ *  健身单元描述信息，WorkoutUnit
  */
 @property (nonatomic, strong, readonly) NSArray * workoutUnits;
 
