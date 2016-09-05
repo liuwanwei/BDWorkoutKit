@@ -10,7 +10,16 @@
 
 @implementation WorkoutPlan
 
-- (CKRecord *)iCloudRecordObject{
+- (instancetype)initWithICloudRecord:(CKRecord *)record{
+    if (self = [self init]) {
+        // 从 CKRecord 生成数据
+        
+    }
+    
+    return self;
+}
+
+- (CKRecord *)iCloudRecord{
     // TODO: 返回桥梁性质的 CKRecord 对象
     return nil;
 }

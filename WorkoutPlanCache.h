@@ -28,13 +28,8 @@
 
 + (instancetype)sharedInstance;
 
+// 查询内置的训练方案
 + (NSArray *)builtInWorkoutPlans;
-
-/**
- * 将训练数据写入磁盘缓存
- * 包括：训练方案、训练结果、训练单元
- */
-- (void)syncToDisk;
 
 /**
  * 新建训练方案。
@@ -45,6 +40,12 @@
 - (BOOL)addWorkoutPlan:(WorkoutPlan *)plan;
 - (BOOL)deleteWorkoutPlan:(WorkoutPlan *)plan;
 - (BOOL)updateWorkoutPlan:(WorkoutPlan *)plan;
+
+// 向服务器查询自定义训练方案
+- (void)queryWorkoutPlan;
+
+// 将训练方案写入磁盘缓存
+- (void)syncToDisk;
 
 
 @end

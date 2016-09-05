@@ -7,7 +7,7 @@
 //  Copyright (c) 2015年 maoyu. All rights reserved.
 //
 
-#import "BaseModel.h"
+#import "BDiCloudModel.h"
 #import <CloudKit/CloudKit.h>
 
 typedef enum{
@@ -17,12 +17,10 @@ typedef enum{
     PlanTypeJumpRope    = 3,
 }WorkoutPlanType;
 
-@interface WorkoutPlan : BaseModel
+@interface WorkoutPlan : BDiCloudModel
 
-@property (nonatomic, copy) NSNumber * objectId;
-
-// 训练方案类型：0 内置，1 HIIT，2 器械 3 跳绳
-@property (nonatomic, copy) NSNumber * type;
+// 训练方案类型：WorkoutPlanType
+@property (nonatomic, strong) NSNumber * type;
 
 // 训练方案的名字，如：徒手训练·初级
 @property (nonatomic, copy) NSString * title;
@@ -41,8 +39,6 @@ typedef enum{
 
 // 训练方案的整体描述文件名字，如：desc-hiit-girl-primary.txt
 @property (nonatomic, copy) NSString * detailsBundleFile;
-
-- (CKRecord *)iCloudRecordObject;
 
 - (BOOL)isBuiltInPlan;
 

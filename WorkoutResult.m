@@ -16,8 +16,9 @@ const void * AssociatedWorkoutResult = "AssociatedWorkoutResult";
 
 static NSString * const WorkoutTime = @"workoutTime";
 static NSString * const ConsumedTime = @"consumedTime";
-static NSString * const PausedTimes = @"PausedTimes";
+static NSString * const PausedTimes = @"pausedTimes";
 static NSString * const UnitResults = @"unitResults";
+static NSString * const TotalNumber = @"totalNumber";
 
 @implementation WorkoutResult
 
@@ -38,6 +39,7 @@ static NSString * const UnitResults = @"unitResults";
         _consumedTime = [record objectForKey:ConsumedTime];
         _pausedTimes = [record objectForKey:PausedTimes];
         _unitResults = [record objectForKey:UnitResults];
+        _totalNumber = [record objectForKey:TotalNumber];
         _savedToICloud = @(YES);
     }
     

@@ -14,12 +14,13 @@
 #import <CloudKit/CloudKit.h>
 #import <TMCache.h>
 
+// iCloud 中使用的训练方案存储类型
+static NSString * const RecordTypeWorkoutPlan = @"WorkoutPlan";
+// TMCache 使用的训练方案存储键值
 static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 
 @implementation WorkoutPlanCache{
     NSMutableArray * _internalWorkoutPlans;
-    
-    // TODO: 能否每个 WorkoutXXXCache 类实例都有一个独立的 _cloudManager ？
     __weak BDiCloudManager * _cloudManager;
 }
 
@@ -59,13 +60,6 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     }
 }
 
-
-- (void)syncToDisk{
-    TMDiskCache * cache = [TMDiskCache sharedCache];
-    [cache setObject:_internalWorkoutPlans forKey:WorkoutPlansKey];
-}
-
-
 - (NSArray *)workoutPlans{
     return [_internalWorkoutPlans copy];
 }
@@ -90,7 +84,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     BOOL ret = [self cacheWorkoutPlan:workoutPlan];
     
     if (ret) {
-        [_cloudManager addRecord:[workoutPlan iCloudRecordObject]];
+        [_cloudManager addRecord:[workoutPlan iCloudRecord]];
     }
     
     return ret;
@@ -126,10 +120,40 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     }
     
     // TODO: 修改后再添加会发生什么，请看代码学习
-    [_cloudManager addRecord:[plan iCloudRecordObject]];
+    [_cloudManager addRecord:[plan iCloudRecord]];
     
     [self syncToDisk];
     return true;
 }
+
+// 向服务器查询训练方案
+- (void)queryWorkoutPlan{
+    [_cloudManager recordsWithType:RecordTypeWorkoutPlan from:self action:@selector(handleReceivedRecords:)];
+}
+
+// 处理查询到的数据
+- (void)handleReceivedRecords:(NSArray *)records{
+    BOOL changed = false;
+    for (CKRecord * record in records) {
+        WorkoutPlan * plan = [[WorkoutPlan alloc] initWithICloudRecord:record];
+        BOOL ret = [[WorkoutPlanCache sharedInstance] cacheWorkoutPlan:plan];
+        if (ret) {
+            changed = true;
+        }
+    }
+    
+    if (changed) {
+        [self syncToDisk];
+    }
+    
+    // TODO: 仿照 DataCache，再次检查本地是否有未上传到 iCloud 的数据
+}
+
+// 数据缓存到本地
+- (void)syncToDisk{
+    TMDiskCache * cache = [TMDiskCache sharedCache];
+    [cache setObject:_internalWorkoutPlans forKey:WorkoutPlansKey];
+}
+
 
 @end

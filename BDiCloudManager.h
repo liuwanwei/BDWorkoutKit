@@ -25,4 +25,6 @@
 - (void)queryRecordsWithType:(NSString *)recordType;
 - (void)addRecord:(CKRecord *)record;
 
+- (void)recordsWithType:(NSString *)recordType from:(id)caller action:(SEL)sel;
+
 @end
