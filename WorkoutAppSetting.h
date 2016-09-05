@@ -43,7 +43,7 @@ typedef enum{
 /**
  *  注册 iCloud 消息通知 Handler
  */
-- (void)registeriCloudSynchronizeService;
+//- (void)registeriCloudSynchronizeService;
 
 /**
  *  本地通知时间快速访问函数，将 _fireHour 和 _fireMinute 封装到一个 NSDate 对象中

@@ -1,6 +1,9 @@
 //
 //  AppSetting.m
-//  7MinutesWorkout
+//  7分钟和 HIIT 用到的配置信息
+//
+//  自 “HIIT有氧训练” 1.3 版起，用户的配置信息不再保存到 iCloud，为的是降低软件复杂度
+//  iCloud 只保存最重要的数据
 //
 //  Created by sungeo on 15/7/11.
 //  Copyright (c) 2015年 maoyu. All rights reserved.
@@ -61,74 +64,8 @@ static NSString * const HiitType = @"hiitType";
     return self;
 }
 
-- (void)registeriCloudSynchronizeService{
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(iCloudStoreDidChange:) name:NSUbiquitousKeyValueStoreDidChangeExternallyNotification object:[NSUbiquitousKeyValueStore defaultStore]];
-    
-    [[NSUbiquitousKeyValueStore defaultStore] synchronize];
-}
-
-/**
- *  处理 iCloud 的通知消息，更新 Key-Value 数据
- *
- *  @param notification 系统推送过来的 iCloud 数据变化通知，使用 userInfo 来判断哪个有修改
- */
-- (void)iCloudStoreDidChange:(NSNotification *)notification{
-    NSDictionary * userInfo = notification.userInfo;
-    if (userInfo == nil) {
-        return;
-    }
-    
-    BOOL resetNotification = NO;
-    id value;
-    if (( value = [userInfo valueForKey:NotificationOn]) != nil) {
-        if (![self.notificationOn isEqualToValue:value]) {
-            self.notificationOn = (NSNumber *)value;
-            resetNotification = YES;
-        }
-        
-    }else if(( value = [userInfo valueForKey:NotificationText]) != nil){
-        if (![self.notificationText isEqualToString:value]) {
-            self.notificationText = (NSString *)value;
-            resetNotification = YES;
-        }
-        
-    }else if(( value = [userInfo valueForKey:NotificationTime]) != nil){
-        if (![self.notificationTime isEqualToDate:value]) {
-            self.notificationTime = (NSDate *)value;
-            resetNotification = YES;
-        }
-        
-    }else if(( value = [userInfo valueForKey:MuteSwitchOn]) != nil){
-        self.muteSwitchOn = (NSNumber *)value;
-    }else if(( value = [userInfo valueForKey:VoiceType]) != nil){
-        self.voiceType = (NSNumber *)value;
-    }else if(( value = [userInfo valueForKey:MusicName]) != nil){
-        self.musicName = (NSString *)value;
-    }else if ((value = [userInfo valueForKey:WorkoutPlanId]) != nil){
-        self.workoutPlanId = (NSNumber *)value;
-    }else if((value = [userInfo valueForKey:HiitType]) != nil){
-        self.workoutPlanId = (NSNumber *)value;
-    }
-    
-    if (resetNotification) {
-        [self startNotification];
-    }
-    
-    NSLog(@"收到 iCloud 数据更新消息");
-}
-
 - (void)syncDataToDisk{
     [[TMDiskCache sharedCache] setObject:self forKey:AppSettingKey];
-    
-    // 存储到 iCloud 中
-//    NSUbiquitousKeyValueStore * store = [NSUbiquitousKeyValueStore defaultStore];
-//    [store setValue:_notificationOn forKey:NotificationOn];
-//    [store setValue:_notificationText forKey:NotificationText];
-//    [store setValue:_notificationTime forKey:NotificationTime];
-//    [store setValue:_muteSwitchOn forKey:MuteSwitchOn];
-//    [store setValue:_voiceType forKey:VoiceType];
-//    [store setValue:_musicName forKey:MusicName];
-//    [store setValue:_hiitType forKey:HiitType];
 }
 
 - (void)startNotification{
@@ -139,4 +76,60 @@ static NSString * const HiitType = @"hiitType";
     [[WorkoutNotificationManager sharedInstance] cancelAllNotifications];
 }
 
+
+//- (void)registeriCloudSynchronizeService{
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(iCloudStoreDidChange:) name:NSUbiquitousKeyValueStoreDidChangeExternallyNotification object:[NSUbiquitousKeyValueStore defaultStore]];
+//    
+//    [[NSUbiquitousKeyValueStore defaultStore] synchronize];
+//}
+
+/**
+ *  处理 iCloud 的通知消息，更新 Key-Value 数据
+ *
+ *  @param notification 系统推送过来的 iCloud 数据变化通知，使用 userInfo 来判断哪个有修改
+ */
+//- (void)iCloudStoreDidChange:(NSNotification *)notification{
+//    NSDictionary * userInfo = notification.userInfo;
+//    if (userInfo == nil) {
+//        return;
+//    }
+//    
+//    BOOL resetNotification = NO;
+//    id value;
+//    if (( value = [userInfo valueForKey:NotificationOn]) != nil) {
+//        if (![self.notificationOn isEqualToValue:value]) {
+//            self.notificationOn = (NSNumber *)value;
+//            resetNotification = YES;
+//        }
+//        
+//    }else if(( value = [userInfo valueForKey:NotificationText]) != nil){
+//        if (![self.notificationText isEqualToString:value]) {
+//            self.notificationText = (NSString *)value;
+//            resetNotification = YES;
+//        }
+//        
+//    }else if(( value = [userInfo valueForKey:NotificationTime]) != nil){
+//        if (![self.notificationTime isEqualToDate:value]) {
+//            self.notificationTime = (NSDate *)value;
+//            resetNotification = YES;
+//        }
+//        
+//    }else if(( value = [userInfo valueForKey:MuteSwitchOn]) != nil){
+//        self.muteSwitchOn = (NSNumber *)value;
+//    }else if(( value = [userInfo valueForKey:VoiceType]) != nil){
+//        self.voiceType = (NSNumber *)value;
+//    }else if(( value = [userInfo valueForKey:MusicName]) != nil){
+//        self.musicName = (NSString *)value;
+//    }else if ((value = [userInfo valueForKey:WorkoutPlanId]) != nil){
+//        self.workoutPlanId = (NSNumber *)value;
+//    }else if((value = [userInfo valueForKey:HiitType]) != nil){
+//        self.workoutPlanId = (NSNumber *)value;
+//    }
+//    
+//    if (resetNotification) {
+//        [self startNotification];
+//    }
+//    
+//    NSLog(@"收到 iCloud 数据更新消息");
+//}
 @end
