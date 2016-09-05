@@ -7,7 +7,7 @@
 //
 
 #import "DataCache.h"
-#import "Workout.h"
+#import "WorkoutUnit.h"
 #import "WorkoutResult.h"
 #import "BDFoundation.h"
 #import "BDiCloudManager.h"
@@ -191,6 +191,9 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     [self syncDataToIcloud];
 }
 
+/*
+ * 训练结果添加到 iCloud 成功后，修改本地存储对象的同步状态
+ */
 - (void)successfullySavedRecord:(CKRecord *)record{
     id object = objc_getAssociatedObject(record, AssociatedWorkoutResult);
     if (object) {
@@ -207,23 +210,23 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     NSDictionary * rootDict = [Utils loadJsonFileFromBundel:@"HiitTypes"];
     if (rootDict) {
         NSArray * dicts = rootDict[@"types"];
-        types = [HiitType objectArrayWithKeyValuesArray:dicts];
+        types = [WorkoutPlan objectArrayWithKeyValuesArray:dicts];
     }
     
-    for (HiitType * type in types) {
-        if ([type.objectId isEqualToNumber:[WorkoutAppSetting sharedInstance].hiitType]) {
-            _currentHiitType = type;
-            
+    NSNumber * selectedWorkoutPlan = [WorkoutAppSetting sharedInstance].workoutPlanId;
+    for (WorkoutPlan * type in types) {
+        if ([type.objectId isEqualToNumber: selectedWorkoutPlan]) {
+            _currentWorkoutPlan = type;
             break;
         }
     }
 }
 
 - (void)resetWorkoutUnits {
-    NSDictionary * rootDict = [Utils loadJsonFileFromBundel:_currentHiitType.configFile];
+    NSDictionary * rootDict = [Utils loadJsonFileFromBundel:_currentWorkoutPlan.configFile];
     if (rootDict) {
         NSArray * dicts = rootDict[@"workouts"];
-        _workoutUnits = [Workout objectArrayWithKeyValuesArray:dicts];
+        _workoutUnits = [WorkoutUnit objectArrayWithKeyValuesArray:dicts];
     }
 }
 

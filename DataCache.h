@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "BDiCloudManager.h"
-#import "HiitType.h"
+#import "WorkoutPlan.h"
 
 @class WorkoutResult;
 
@@ -25,7 +25,7 @@
 /**
  * HIIT 训练方法
  */
-@property (nonatomic, strong, readonly) HiitType * currentHiitType;
+@property (nonatomic, strong, readonly) WorkoutPlan * currentWorkoutPlan;
 
 + (instancetype)sharedInstance;
 
@@ -40,7 +40,7 @@
 - (void)syncDataToDisk;
 
 /**
- *  添加训练记录
+ *  添加训练记录，包括添加到本地缓存和 iCloud 两个步骤
  *
  *  @param workoutResult 最近锻炼情况记录对象
  */

@@ -9,7 +9,7 @@
 
 #import "BaseModel.h"
 
-@interface HiitType : BaseModel
+@interface WorkoutPlan : BaseModel
 
 @property (nonatomic, copy) NSNumber * objectId;
 

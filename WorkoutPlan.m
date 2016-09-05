@@ -6,8 +6,8 @@
 //  Copyright (c) 2015年 maoyu. All rights reserved.
 //
 
-#import "HiitType.h"
+#import "WorkoutPlan.h"
 
-@implementation HiitType
+@implementation WorkoutPlan
 
 @end

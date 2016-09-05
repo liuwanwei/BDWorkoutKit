@@ -9,7 +9,7 @@
 #import "BaseModel.h"
 #import <UIKit/UIKit.h>
 
-@interface Workout : BaseModel
+@interface WorkoutUnit : BaseModel
 
 @property (nonatomic, copy) NSString * objectId;
 

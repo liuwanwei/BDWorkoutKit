@@ -18,6 +18,9 @@ static NSString * const NotificationTime = @"notificationTime";
 static NSString * const MuteSwitchOn = @"muteSwitchOn";
 static NSString * const VoiceType = @"voiceType";
 static NSString * const MusicName = @"musicName";
+
+static NSString * const WorkoutPlanId = @"workoutPlanId";
+// Deprecated：从 1.3 版开始修改成 WorkoutPlanId
 static NSString * const HiitType = @"hiitType";
 
 @implementation WorkoutAppSetting
@@ -32,6 +35,10 @@ static NSString * const HiitType = @"hiitType";
             WorkoutAppSetting * object = (WorkoutAppSetting *)[cache objectForKey:AppSettingKey];
             if (object) {
                 sSharedInstance = object;
+                if (sSharedInstance.workoutPlanId == nil) {
+                    // 1.3 将 hiitType 改为 workoutPlanId，缓存中如果存的是旧属性名字，赋值给新的
+                    sSharedInstance.workoutPlanId = sSharedInstance.hiitType;
+                }
             }else{
                 sSharedInstance = [[WorkoutAppSetting alloc] init];
             }
@@ -48,7 +55,7 @@ static NSString * const HiitType = @"hiitType";
         _muteSwitchOn = @(NO);
         _voiceType = @(PromptVoiceTypeGirl);
         _musicName = @"轻快.mp3";
-        _hiitType = @(HiitTypeGirlElementary);
+        _workoutPlanId = @(HiitTypeGirlElementary);
     }
     
     return self;
@@ -97,8 +104,10 @@ static NSString * const HiitType = @"hiitType";
         self.voiceType = (NSNumber *)value;
     }else if(( value = [userInfo valueForKey:MusicName]) != nil){
         self.musicName = (NSString *)value;
-    }else if ((value = [userInfo valueForKey:HiitType]) != nil){
-        self.hiitType = (NSNumber *)value;
+    }else if ((value = [userInfo valueForKey:WorkoutPlanId]) != nil){
+        self.workoutPlanId = (NSNumber *)value;
+    }else if((value = [userInfo valueForKey:HiitType]) != nil){
+        self.workoutPlanId = (NSNumber *)value;
     }
     
     if (resetNotification) {

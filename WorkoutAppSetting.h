@@ -29,11 +29,11 @@ typedef enum{
 @property (nonatomic, copy) NSString * notificationText;    // 提醒文字
 @property (nonatomic, strong) NSDate * notificationTime;    // 提醒时间：几点几分
 
-@property (nonatomic, strong) NSNumber * muteSwitchOn;     // 声效开关（界面显示静音）
+@property (nonatomic, strong) NSNumber * muteSwitchOn;      // 声效开关（界面显示静音）
 @property (nonatomic, copy) NSNumber * voiceType;           // 提示音枚举类型 PromptVoiceType
-@property (nonatomic, copy) NSString * musicName;           // 背景音乐，音频文件在 MainBundle中的名字
-
-@property (nonatomic, copy) NSNumber * hiitType;    // 当前选择的训练方式
+@property (nonatomic, copy) NSString * musicName;           // 背景音乐文件在 MainBundle中的名字
+@property (nonatomic, copy) NSNumber * workoutPlanId;       // 当前选择的训练方式 Id
+@property (nonatomic, copy) NSNumber * hiitType;            // Deprecated: 改为 workoutPlanId
 
 
 + (instancetype)sharedInstance;

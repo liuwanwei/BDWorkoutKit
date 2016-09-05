@@ -6,9 +6,9 @@
 //  Copyright (c) 2015年 maoyu. All rights reserved.
 //
 
-#import "Workout.h"
+#import "WorkoutUnit.h"
 
-@implementation Workout
+@implementation WorkoutUnit
 
 - (UIImage *)workoutPreviewImage{
     if (_profileBundleImage.length > 0) {

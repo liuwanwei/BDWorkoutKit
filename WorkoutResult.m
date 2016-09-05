@@ -34,7 +34,6 @@ static NSString * const UnitResults = @"unitResults";
 - (instancetype)initWithICloudRecord:(CKRecord *)record{
     if (self = [self init]) {
         // 从 CKRecord 生成数据
-//        self.iid = record.recordID.recordName;
         _workoutTime = [record objectForKey:WorkoutTime];
         _consumedTime = [record objectForKey:ConsumedTime];
         _pausedTimes = [record objectForKey:PausedTimes];
@@ -45,6 +44,9 @@ static NSString * const UnitResults = @"unitResults";
     return self;
 }
 
+/**
+ * 将 WorkoutResult 对象转换为 CKRecord 对象（iCloud对象）
+ */
 - (CKRecord *)iCloudRecordObject{
     CKRecordZone * zone = [CKRecordZone defaultRecordZone];
     CKRecord * record = [[CKRecord alloc] initWithRecordType:RecordTypeWorkoutResult zoneID:zone.zoneID];
@@ -53,6 +55,7 @@ static NSString * const UnitResults = @"unitResults";
     [record setObject:self.pausedTimes forKey:PausedTimes];
     [record setObject:self.unitResults forKey:UnitResults];
     
+    // 将当前对象的指针关联到 CRRecord 对象，用于上传到 iCloud 成功后，更新上传标志
     objc_setAssociatedObject(record, AssociatedWorkoutResult, self, OBJC_ASSOCIATION_ASSIGN);
     
     return record;
