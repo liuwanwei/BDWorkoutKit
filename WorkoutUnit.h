@@ -8,11 +8,12 @@
 
 #import "BaseModel.h"
 #import <UIKit/UIKit.h>
+#import <CloudKit/CloudKit.h>
 
 @interface WorkoutUnit : BaseModel
 
-// 内置训练方案中的训练单元序号
-@property (nonatomic, copy) NSString * objectId;
+// 内置训练方案中的训练单元序号，从文件中读入的是字符串，所以使用 NSString 类型
+@property (nonatomic, copy) NSNumber * objectId;
 
 // 标题，如：开合跳
 @property (nonatomic, copy) NSString * title;
@@ -24,7 +25,7 @@
 @property (nonatomic, strong) NSNumber * exerciseNumber;
 
 // 所属训练方案的 Id，只有自定义训练单元有，内置的没有
-@property (nonatomic, copy) NSString * workoutPlanId;
+@property (nonatomic, copy) NSNumber * workoutPlanId;
 
 // 动作封面图
 @property (nonatomic, copy) NSString * profileBundleImage;
@@ -48,5 +49,7 @@
 
 - (UIImage *)workoutPreviewImage;
 - (NSString *)detailsContent;
+
+- (CKRecord *)iCloudRecordObject;
 
 @end

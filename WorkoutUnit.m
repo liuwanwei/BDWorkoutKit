@@ -43,4 +43,9 @@
     }
 }
 
+- (CKRecord *)iCloudRecordObject{
+    // TODO: 转换成 CKRecord 对象
+    return nil;
+}
+
 @end

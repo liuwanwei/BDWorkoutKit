@@ -36,7 +36,6 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
             sSharedInstance = [[DataCache alloc] init];
             
             [sSharedInstance loadWorkoutResults];
-            [sSharedInstance loadWorkoutUnits];
             
             [sSharedInstance initCloudManager];
             
@@ -64,17 +63,6 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     }
 }
 
-- (void)loadWorkoutUnits{
-    TMDiskCache * cache = [TMDiskCache sharedCache];
-    // 初始化训练记录数据
-    NSArray * temp = (NSArray *)[cache objectForKey:WorkoutUnitsKey];
-    if (temp) {
-        _internalWorkoutUnits = [temp mutableCopy];
-    }else{
-        _internalWorkoutUnits = [[NSMutableArray alloc] init];
-    }
-}
-
 - (void)initCloudManager{
     _cloudManager = [BDiCloudManager sharedInstance];
     _cloudManager.delegate = self;
@@ -91,11 +79,6 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
             [_cloudManager addRecord:[workoutResult iCloudRecordObject]];
         }
     }
-}
-
-- (void)syncWorkoutUnitToDisk{
-    TMDiskCache * cache = [TMDiskCache sharedCache];
-    [cache setObject:_internalWorkoutUnits forKey:WorkoutUnitsKey];
 }
 
 - (void)syncWorkoutResultToDisk{
