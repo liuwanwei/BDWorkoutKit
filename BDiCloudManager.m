@@ -12,7 +12,12 @@
 
 static NSString * const AllRecords = @"TRUEPREDICATE";
 
+// 存储在本地用户信息中用到的 key
+static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken";
+
 @implementation BDiCloudManager{
+    id _iCloudToken;
+    
     __weak CKContainer * _container;
     __weak CKDatabase * _privateDatabase;
 }
@@ -39,8 +44,51 @@ static NSString * const AllRecords = @"TRUEPREDICATE";
     return self;
 }
 
+- (id)iCloudToken{
+    NSData * data = [[NSUserDefaults standardUserDefaults] objectForKey:iCloudTokenKey];
+    if (data) {
+        return [NSKeyedUnarchiver unarchiveObjectWithData:data];
+    }else{
+        return nil;
+    }
+}
+
+- (void)setICloudToken:(id)token{
+    if (token) {
+        NSData *newTokenData = [NSKeyedArchiver archivedDataWithRootObject: token];
+        [[NSUserDefaults standardUserDefaults] setObject: newTokenData forKey: iCloudTokenKey];
+    }else{
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:iCloudTokenKey];
+    }
+    
+}
+
+// 注意：必须在主线程中调用
+- (void)fetchICloudToken{
+    // 取出当前 iCloud Token
+    NSFileManager* fileManager = [NSFileManager defaultManager];
+    id currentiCloudToken = fileManager.ubiquityIdentityToken;
+    
+    if (currentiCloudToken) {
+        id oldICloudToken = [self iCloudToken];
+        if (oldICloudToken && [oldICloudToken isEqual:currentiCloudToken]) {
+            // 有改变，需要清空旧的数据
+        }
+    }
+    
+    _iCloudToken = currentiCloudToken;
+    
+    [self setICloudToken:currentiCloudToken];
+}
+
+// 判断用户是否登录了 iCloud
+// 并不意味用户已授权给我们使用 iCloud，也不意味我们必须用 iCloud 存储数据
+- (BOOL)iCloudAvailable{
+    return _iCloudToken == nil ? NO : YES;
+}
+
 // TODO: 提示用户 iCloud 没有打开，并引导用户打开
-- (void)iCloudNotEnabled{
+- (void)iCloudNotEnabledHandler{
     
 }
 
@@ -97,7 +145,7 @@ static NSString * const AllRecords = @"TRUEPREDICATE";
                 }
             }];
         }else{
-            [self iCloudNotEnabled];
+            [self iCloudNotEnabledHandler];
         }
     }];
 }
@@ -127,7 +175,7 @@ static NSString * const AllRecords = @"TRUEPREDICATE";
                 }
             }];
         }else{
-            [self iCloudNotEnabled];
+            [self iCloudNotEnabledHandler];
         }
     }];
 }

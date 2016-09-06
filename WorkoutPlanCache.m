@@ -8,6 +8,7 @@
 
 #import "WorkoutPlanCache.h"
 #import "WorkoutPlan.h"
+#import "WorkoutAppSetting.h"
 #import "BDiCloudManager.h"
 #import "BDFoundation.h"
 #import <MJExtension.h>
@@ -21,7 +22,6 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 
 @implementation WorkoutPlanCache{
     NSMutableArray * _internalWorkoutPlans;
-    __weak BDiCloudManager * _cloudManager;
 }
 
 + (instancetype)sharedInstance{
@@ -29,8 +29,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (sSharedInstance == nil) {
-            sSharedInstance = [[WorkoutPlanCache alloc] init];            
-            [sSharedInstance loadDiskCache];
+            sSharedInstance = [[WorkoutPlanCache alloc] init];
         }
     });
     
@@ -49,7 +48,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 }
 
 // 从本地加载自定义训练方案
-- (void)loadDiskCache{
+- (void)loadFromDisk{
     TMDiskCache * cache = [TMDiskCache sharedCache];
     // 初始化训练记录数据
     NSArray * temp = (NSArray *)[cache objectForKey:WorkoutPlansKey];
@@ -58,6 +57,12 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     }else{
         _internalWorkoutPlans = [[NSMutableArray alloc] init];
     }
+}
+
+// 数据缓存到本地
+- (void)saveToDisk{
+    TMDiskCache * cache = [TMDiskCache sharedCache];
+    [cache setObject:_internalWorkoutPlans forKey:WorkoutPlansKey];
 }
 
 - (NSArray *)workoutPlans{
@@ -84,7 +89,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     BOOL ret = [self cacheWorkoutPlan:workoutPlan];
     
     if (ret) {
-        [_cloudManager addRecord:[workoutPlan iCloudRecord]];
+        [self.cloudManager addRecord:[workoutPlan iCloudRecord]];
     }
     
     return ret;
@@ -110,7 +115,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     
     // TODO: 从 iCloud 中删除
     
-    [self syncToDisk];
+    [self saveToDisk];
     return true;
 }
 
@@ -120,39 +125,25 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     }
     
     // TODO: 修改后再添加会发生什么，请看代码学习
-    [_cloudManager addRecord:[plan iCloudRecord]];
+    [self.cloudManager addRecord:[plan iCloudRecord]];
     
-    [self syncToDisk];
+    [self saveToDisk];
     return true;
 }
 
 // 向服务器查询训练方案
-- (void)queryWorkoutPlan{
-    [_cloudManager recordsWithType:RecordTypeWorkoutPlan from:self action:@selector(handleReceivedRecords:)];
+- (void)queryFromICloud{
+    [self.cloudManager recordsWithType:RecordTypeWorkoutPlan from:self action:@selector(handleReceivedRecords:)];
 }
 
 // 处理查询到的数据
 - (void)handleReceivedRecords:(NSArray *)records{
-    BOOL changed = false;
     for (CKRecord * record in records) {
         WorkoutPlan * plan = [[WorkoutPlan alloc] initWithICloudRecord:record];
-        BOOL ret = [[WorkoutPlanCache sharedInstance] cacheWorkoutPlan:plan];
-        if (ret) {
-            changed = true;
-        }
-    }
-    
-    if (changed) {
-        [self syncToDisk];
+        [[WorkoutPlanCache sharedInstance] cacheWorkoutPlan:plan];
     }
     
     // TODO: 仿照 DataCache，再次检查本地是否有未上传到 iCloud 的数据
-}
-
-// 数据缓存到本地
-- (void)syncToDisk{
-    TMDiskCache * cache = [TMDiskCache sharedCache];
-    [cache setObject:_internalWorkoutPlans forKey:WorkoutPlansKey];
 }
 
 

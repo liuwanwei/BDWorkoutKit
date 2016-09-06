@@ -23,7 +23,7 @@
 
 + (instancetype)sharedInstance;
 
-- (void)syncToDisk;
+- (void)load;
 
 - (WorkoutUnit *)newUnitForPlan:(NSNumber *)workoutPlanId;
 - (BOOL)addWorkoutUnit:(WorkoutUnit *)unit;

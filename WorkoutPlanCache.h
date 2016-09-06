@@ -19,9 +19,10 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "BaseCache.h"
 #import "WorkoutPlan.h"
 
-@interface WorkoutPlanCache : NSObject
+@interface WorkoutPlanCache : BaseCache
 
 // 自定义训练方案数组（WorkoutPlan）
 @property (nonatomic, strong, readonly) NSArray * workoutPlans;
@@ -40,12 +41,5 @@
 - (BOOL)addWorkoutPlan:(WorkoutPlan *)plan;
 - (BOOL)deleteWorkoutPlan:(WorkoutPlan *)plan;
 - (BOOL)updateWorkoutPlan:(WorkoutPlan *)plan;
-
-// 向服务器查询自定义训练方案
-- (void)queryWorkoutPlan;
-
-// 将训练方案写入磁盘缓存
-- (void)syncToDisk;
-
 
 @end

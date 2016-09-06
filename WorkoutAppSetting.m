@@ -15,17 +15,17 @@
 
 static NSString * const AppSettingKey = @"AppSettingKey";
 
-static NSString * const NotificationOn = @"notificationOn";
-static NSString * const NotificationText = @"notificationText";
-static NSString * const NotificationTime = @"notificationTime";
-static NSString * const MuteSwitchOn = @"muteSwitchOn";
-static NSString * const VoiceType = @"voiceType";
-static NSString * const MusicName = @"musicName";
-static NSString * const iCloudEnabled = @"iCloudEnabled";
+//static NSString * const NotificationOn = @"notificationOn";
+//static NSString * const NotificationText = @"notificationText";
+//static NSString * const NotificationTime = @"notificationTime";
+//static NSString * const MuteSwitchOn = @"muteSwitchOn";
+//static NSString * const VoiceType = @"voiceType";
+//static NSString * const MusicName = @"musicName";
+//static NSString * const useICloud = @"useICloud";
 
-static NSString * const WorkoutPlanId = @"workoutPlanId";
+//static NSString * const WorkoutPlanId = @"workoutPlanId";
 // Deprecated：从 1.3 版开始修改成 WorkoutPlanId
-static NSString * const HiitType = @"hiitType";
+//static NSString * const HiitType = @"hiitType";
 
 @implementation WorkoutAppSetting
 
@@ -43,6 +43,12 @@ static NSString * const HiitType = @"hiitType";
                     // 1.3 将 hiitType 改为 workoutPlanId，缓存中如果存的是旧属性名字，赋值给新的
                     sSharedInstance.workoutPlanId = sSharedInstance.hiitType;
                 }
+                
+                if (sSharedInstance.useICloud == nil) {
+                    // 1.3 新增数据是否保存到 iCloud 标志（通过界面让用户选择的结果）
+                    sSharedInstance.useICloud = @(NO);
+                }
+                
             }else{
                 sSharedInstance = [[WorkoutAppSetting alloc] init];
             }
@@ -60,6 +66,7 @@ static NSString * const HiitType = @"hiitType";
         _voiceType = @(PromptVoiceTypeGirl);
         _musicName = @"轻快.mp3";
         _workoutPlanId = @(HiitTypeGirlElementary);
+        _useICloud = @(NO);
     }
     
     return self;

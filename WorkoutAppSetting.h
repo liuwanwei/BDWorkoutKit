@@ -36,7 +36,8 @@ typedef enum{
 @property (nonatomic, copy) NSNumber * workoutPlanId;       // 当前选择的训练方式 Id
 @property (nonatomic, copy) NSNumber * hiitType;            // Deprecated: 改为 workoutPlanId
 
-@property (nonatomic, strong) NSNumber * iCloudEnabled;     // iCloud 是否打开
+@property (nonatomic, strong) NSNumber * useICloud;         // 是否使用 iCloud 保存训练方案等数据，
+                                                            // 不使用时，用 TMCache 保存数据
 
 + (instancetype)sharedInstance;
 

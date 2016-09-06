@@ -8,6 +8,7 @@
 
 #import "WorkoutUnitCache.h"
 #import "WorkoutUnit.h"
+#import "WorkoutAppSetting.h"
 #import "BDiCloudManager.h"
 #import "WorkoutPlan.h"
 #import <CloudKit/CloudKit.h>
@@ -19,7 +20,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 @implementation WorkoutUnitCache{
     NSMutableArray * _internalWorkoutUnits;
     
-    // TODO: 能否每个 WorkoutXXXCache 类实例都有一个独立的 _cloudManager ？
+    __weak WorkoutAppSetting * _appSetting;
     __weak BDiCloudManager * _cloudManager;
 
 }
@@ -30,15 +31,30 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     dispatch_once(&onceToken, ^{
         if (sSharedInstance == nil) {
             sSharedInstance = [[WorkoutUnitCache alloc] init];
-            [sSharedInstance loadDiskCache];
         }
     });
     
     return sSharedInstance;
-
 }
 
-- (void)loadDiskCache{
+- (instancetype)init{
+    if (self = [super init]) {
+        _appSetting = [WorkoutAppSetting sharedInstance];
+        _cloudManager = [BDiCloudManager sharedInstance];
+    }
+    
+    return self;
+}
+
+- (void)load{
+    if ([_appSetting.useICloud boolValue]) {
+        // TODO: 从 iCloud 查询
+    }else{
+        [self loadFromDisk];
+    }
+}
+
+- (void)loadFromDisk{
     TMDiskCache * cache = [TMDiskCache sharedCache];
     // 初始化训练记录数据
     NSArray * temp = (NSArray *)[cache objectForKey:WorkoutUnitsKey];
@@ -49,7 +65,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     }
 }
 
-- (void)syncToDisk{
+- (void)saveToDisk{
     TMDiskCache * cache = [TMDiskCache sharedCache];
     [cache setObject:_internalWorkoutUnits forKey:WorkoutUnitsKey];
 }
@@ -75,7 +91,11 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     BOOL ret = [self cacheWorkoutUnit:unit];
     
     if (ret) {
-        [_cloudManager addRecord:[unit iCloudRecord]];
+        if ([_appSetting.useICloud boolValue]) {
+            [_cloudManager addRecord:[unit iCloudRecord]];
+        }else{
+            [self saveToDisk];
+        }
     }
     
     return ret;
@@ -97,27 +117,34 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     if (! [_internalWorkoutUnits containsObject:unit]) {
         return false;
     }
-    
     [_internalWorkoutUnits removeObject:unit];
     
-    // TODO: 从 iCloud 中删除
+    if ([_appSetting.useICloud boolValue]) {
+        // TODO: 从 iCloud 中删除
+    }else{
+        [self saveToDisk];
+    }
     
-    [self syncToDisk];
     return true;
 }
 
+// 更新
 - (BOOL)updateWorkoutUnit:(WorkoutUnit *)unit{
     if (! [_internalWorkoutUnits containsObject:unit]) {
         return false;
     }
     
-    // TODO: 修改后再添加会发生什么，请看代码学习
-    [_cloudManager addRecord:[unit iCloudRecord]];
+    if ([_appSetting.useICloud boolValue]) {
+        // TODO: 修改后再添加会发生什么，请看代码学习
+        [_cloudManager addRecord:[unit iCloudRecord]];
+    }else{
+        [self saveToDisk];
+    }
     
-    [self syncToDisk];
     return true;
 }
 
+// 查询训练方案下属的所有训练单元
 - (NSArray *)unitsForPlan:(WorkoutPlan *)plan{
     NSMutableArray * units = [[NSMutableArray alloc] init];
     for (WorkoutUnit * unit in _internalWorkoutUnits) {
