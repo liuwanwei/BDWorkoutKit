@@ -8,20 +8,39 @@
 
 #import "WorkoutPlan.h"
 
+// iCloud 上数据表名字
+static NSString * const RecordTypeWorkoutPlan = @"WorkoutPlan";
+
+// iCloud 上数据表字段名字
+//static NSString * const ObjectId = @"objectId";
+static NSString * const Title = @"title";
+static NSString * const Type = @"type";
+static NSString * const Cover = @"cover";
+static NSString * const HeaderImage = @"headerImage";
+
 @implementation WorkoutPlan
 
 - (instancetype)initWithICloudRecord:(CKRecord *)record{
-    if (self = [self init]) {
+    if (self = [super initWithICloudRecord:record]) {
         // 从 CKRecord 生成数据
-        
+        _title = [record objectForKey:Title];
+        _type = [record objectForKey:Type];
+        _cover = [record objectForKey:Cover];
+        _headerImage = [record objectForKey:HeaderImage];
     }
     
     return self;
 }
 
 - (CKRecord *)iCloudRecord{
-    // TODO: 返回桥梁性质的 CKRecord 对象
-    return nil;
+    CKRecord * record = [super baseICloudRecordWithType:RecordTypeWorkoutPlan];
+
+    [record setObject:self.type forKey:Type];
+    [record setObject:self.title forKey:Title];
+    [record setObject:self.cover forKey:Cover];
+    [record setObject:self.headerImage forKey:HeaderImage];
+    
+    return record;
 }
 
 - (BOOL)isBuiltInPlan{

@@ -75,7 +75,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     BOOL ret = [self cacheWorkoutUnit:unit];
     
     if (ret) {
-        [_cloudManager addRecord:[unit iCloudRecordObject]];
+        [_cloudManager addRecord:[unit iCloudRecord]];
     }
     
     return ret;
@@ -112,7 +112,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     }
     
     // TODO: 修改后再添加会发生什么，请看代码学习
-    [_cloudManager addRecord:[unit iCloudRecordObject]];
+    [_cloudManager addRecord:[unit iCloudRecord]];
     
     [self syncToDisk];
     return true;

@@ -6,14 +6,11 @@
 //  Copyright (c) 2015年 maoyu. All rights reserved.
 //
 
-#import "BaseModel.h"
+#import "BDiCloudModel.h"
 #import <UIKit/UIKit.h>
 #import <CloudKit/CloudKit.h>
 
-@interface WorkoutUnit : BaseModel
-
-// 内置训练方案中的训练单元序号，从文件中读入的是字符串，所以使用 NSString 类型
-@property (nonatomic, copy) NSNumber * objectId;
+@interface WorkoutUnit : BDiCloudModel
 
 // 标题，如：开合跳
 @property (nonatomic, copy) NSString * title;
@@ -49,7 +46,5 @@
 
 - (UIImage *)workoutPreviewImage;
 - (NSString *)detailsContent;
-
-- (CKRecord *)iCloudRecordObject;
 
 @end

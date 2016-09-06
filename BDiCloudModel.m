@@ -7,16 +7,42 @@
 //
 
 #import "BDiCloudModel.h"
+#import <objc/runtime.h>
+
+// 绑定 self 指针到 CKRecord 对象上用到的键值
+const void * AssociatedBDModel = @"AssociatedBDModel";
+
+// iCloud 上数据表字段名字
+static NSString * const ObjectId = @"objectId";
 
 @implementation BDiCloudModel
 
+- (CKRecord *)baseICloudRecordWithType:(NSString *)recordType{
+    CKRecordZone * zone = [CKRecordZone defaultRecordZone];
+    CKRecord * record = [[CKRecord alloc] initWithRecordType:recordType zoneID:zone.zoneID];
+    
+    if (_objectId != nil) {
+        [record setObject:_objectId forKey:ObjectId];
+    }
+    
+    // 将当前对象的指针关联到 CRRecord 对象，用于上传到 iCloud 成功后，更新上传标志
+    objc_setAssociatedObject(record, AssociatedBDModel, self, OBJC_ASSOCIATION_ASSIGN);
+
+    return record;
+}
+
 // iCloud/CloudKit 的 CKRecord 对象之间互相转换
 - (nullable instancetype)initWithICloudRecord:(nonnull CKRecord *)record{
-    return nil;
+    if (self = [super init]) {
+        _objectId = [record objectForKey:ObjectId];
+    }
+    
+    return self;
 }
 
 // 将当前对象转换成 CKRecord 对象并返回
 - (nullable CKRecord *)iCloudRecord{
+    // 派生类必须重载这个接口
     return nil;
 }
 

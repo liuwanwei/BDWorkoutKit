@@ -21,6 +21,7 @@ static NSString * const NotificationTime = @"notificationTime";
 static NSString * const MuteSwitchOn = @"muteSwitchOn";
 static NSString * const VoiceType = @"voiceType";
 static NSString * const MusicName = @"musicName";
+static NSString * const iCloudEnabled = @"iCloudEnabled";
 
 static NSString * const WorkoutPlanId = @"workoutPlanId";
 // Deprecated：从 1.3 版开始修改成 WorkoutPlanId
