@@ -34,6 +34,7 @@ static NSString * const ObjectId = @"objectId";
 // iCloud/CloudKit 的 CKRecord 对象之间互相转换
 - (nullable instancetype)initWithICloudRecord:(nonnull CKRecord *)record{
     if (self = [super init]) {
+        _cloudRecord = record;
         _objectId = [record objectForKey:ObjectId];
     }
     

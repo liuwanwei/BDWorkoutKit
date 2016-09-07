@@ -76,6 +76,11 @@ static NSString * const AppSettingKey = @"AppSettingKey";
     [[TMDiskCache sharedCache] setObject:self forKey:AppSettingKey];
 }
 
+// 对 useICloud 属性添加一层易于访问的封装
+- (BOOL)useICloudSchema{
+    return [_useICloud boolValue];
+}
+
 - (void)startNotification{
     [[WorkoutNotificationManager sharedInstance] deployLocalNotification:_notificationTime];
 }

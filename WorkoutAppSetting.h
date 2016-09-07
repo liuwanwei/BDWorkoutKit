@@ -43,6 +43,8 @@ typedef enum{
 
 - (void)syncDataToDisk;
 
+- (BOOL)useICloudSchema;
+
 /**
  *  注册 iCloud 消息通知 Handler
  */
