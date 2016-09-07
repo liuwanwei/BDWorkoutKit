@@ -40,6 +40,9 @@ typedef enum{
 // 训练方案的整体描述文件名字，如：desc-hiit-girl-primary.txt
 @property (nonatomic, copy) NSString * detailsBundleFile;
 
+// 当前训练方案实例是不是系统内置的训练方案
 - (BOOL)isBuiltInPlan;
+
+- (void)updateCloudRecord:(CKRecord *)record;
 
 @end

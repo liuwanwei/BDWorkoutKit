@@ -151,6 +151,10 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     }
     
     if ([self.appSetting useICloudSchema]) {
+        
+        // 将内存数据的修改同步到 iCloud 对象上
+        [plan updateCloudRecord:plan.cloudRecord];
+        
         CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:@[plan.cloudRecord] recordIDsToDelete:nil];
         modifyRecord.savePolicy = CKRecordSaveAllKeys;
         modifyRecord.qualityOfService = NSQualityOfServiceUserInitiated;

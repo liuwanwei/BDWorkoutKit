@@ -34,22 +34,24 @@ static NSString * const HeaderImage = @"headerImage";
 
 - (CKRecord *)iCloudRecord{
     CKRecord * record = [super baseICloudRecordWithType:RecordTypeWorkoutPlan];
-
-    [record setObject:self.type forKey:Type];
-    [record setObject:self.title forKey:Title];
-    [record setObject:self.cover forKey:Cover];
-    [record setObject:self.headerImage forKey:HeaderImage];
-    
+    [self updateCloudRecord:record];
     return record;
 }
 
 - (BOOL)isBuiltInPlan{
     NSInteger type = [self.type integerValue];
     if (type != PlanTypeHIIT) {
-        return true;
+        return YES;
     }
     
-    return false;
+    return NO;
+}
+
+- (void)updateCloudRecord:(CKRecord *)record{
+    [record setObject:self.type forKey:Type];
+    [record setObject:self.title forKey:Title];
+    [record setObject:self.cover forKey:Cover];
+    [record setObject:self.headerImage forKey:HeaderImage];
 }
 
 @end
