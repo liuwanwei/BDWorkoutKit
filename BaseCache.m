@@ -14,7 +14,8 @@
 
 - (instancetype)init{
     if (self = [super init]) {
-        self.cloudManager = [BDiCloudManager sharedInstance];
+        self.cloudManager = [[BDiCloudManager alloc] init];
+        self.cloudManager.delegate = self;
         self.appSetting = [WorkoutAppSetting sharedInstance];
     }
     
@@ -30,17 +31,18 @@
 }
 
 - (void)loadFromDisk{
-    @throw [NSException exceptionWithName:NSGenericException reason:@"派生类必须重载 BaseCache 中声明的 loadFromDisk 函数" userInfo:nil];
+    @throw [NSException exceptionWithName:NSGenericException reason:@"派生类必须重载 BaseCache 中声明的 LoadFromDisk 函数" userInfo:nil];
 }
 
 - (void)saveToDisk{
-    @throw [NSException exceptionWithName:NSGenericException reason:@"派生类必须重载 BaseCache 中声明的 saveToDisk 函数" userInfo:nil];
+    @throw [NSException exceptionWithName:NSGenericException reason:@"派生类必须重载 BaseCache 中声明的 SaveToDisk 函数" userInfo:nil];
 }
 
 - (void)queryFromICloud{
-    @throw [NSException exceptionWithName:NSGenericException reason:@"派生类必须重载 BaseCache 中声明的 queryFromICloud 函数" userInfo:nil];
+    @throw [NSException exceptionWithName:NSGenericException reason:@"派生类必须重载 BaseCache 中声明的 QueryFromICloud 函数" userInfo:nil];
 }
 
+// 删除本地旧的 iCloud 记录：一般用在删除训练方案、单元、结果后
 - (BOOL)removeICloudRecord:(CKRecordID *)recordID{
     if (_cloudRecords && _cloudRecords.count > 0) {
         NSMutableArray * records = [_cloudRecords mutableCopy];
@@ -54,6 +56,21 @@
     }
     
     return NO;
+}
+
+// 添加新的 iCloud 记录到本地：一般用在新建训练方案、单元、结果时
+- (void)insertNewICloudRecord:(CKRecord *)record{
+    if (_cloudRecords) {
+        NSMutableArray * mutable = [_cloudRecords mutableCopy];
+        [mutable addObject:record];
+        _cloudRecords = [mutable copy];
+    }else{
+        _cloudRecords = [NSArray arrayWithObject:record];
+    }
+}
+
+- (NSString *)recordType{
+    @throw [NSException exceptionWithName:NSGenericException reason:@"派生类必须重载 BaseCache 中声明的 RecordType 函数" userInfo:nil];
 }
 
 @end

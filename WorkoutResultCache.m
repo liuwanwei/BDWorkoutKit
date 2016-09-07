@@ -117,7 +117,12 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     return YES;
 }
 
-#pragma mark - iCloud 存储管理器托管协议处理
+#pragma mark - BDiCloudDelegate
+
+- (NSString *)recordType{
+    return RecordTypeWorkoutResult;
+}
+
 - (void)didReceiveWorkoutResults:(NSArray *)results{
     if (results == nil || results.count <= 0) {
         return;

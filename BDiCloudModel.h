@@ -27,6 +27,7 @@
 // 将当前对象转换成 CKRecord 对象并返回
 - (nullable CKRecord *)iCloudRecord;
 
+// 派生类创建对象时绑定跟原始 CKRecord 指针的接口
 - (nonnull CKRecord *)baseICloudRecordWithType:(nonnull NSString *)recordType;
 
 @end

@@ -12,7 +12,7 @@
 
 @class WorkoutResult;
 
-@interface DataCache : NSObject <BDiCloudDelegate>
+@interface DataCache : NSObject
 
 // 当前训练方案的训练单元数组(WorkoutUnit)
 @property (nonatomic, strong, readonly) NSArray * workoutUnits;

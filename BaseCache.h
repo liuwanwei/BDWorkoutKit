@@ -7,15 +7,16 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "BDiCloudManager.h"
 
 @class WorkoutAppSetting;
-@class BDiCloudManager;
 @class CKRecordID;
+@class CKRecord;
 
-@interface BaseCache : NSObject
+@interface BaseCache : NSObject <BDiCloudDelegate>
 
 @property (nonatomic, weak) WorkoutAppSetting * appSetting;
-@property (nonatomic, weak) BDiCloudManager * cloudManager;
+@property (nonatomic, strong) BDiCloudManager * cloudManager;
 
 // 从 iCloud 查询到的数据
 @property (nonatomic, strong) NSArray * cloudRecords;
@@ -26,6 +27,8 @@
 // 从 iCloud 查询数据
 - (void)queryFromICloud;
 - (BOOL)removeICloudRecord:(CKRecordID *)recordID;
+
+- (void)insertNewICloudRecord:(CKRecord *)record;
 
 // 从磁盘加载数据
 - (void)loadFromDisk;

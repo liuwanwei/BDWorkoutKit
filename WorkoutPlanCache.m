@@ -14,6 +14,7 @@
 #import <MJExtension.h>
 #import <CloudKit/CloudKit.h>
 #import <TMCache.h>
+#import <EXTScope.h>
 
 // iCloud 中使用的训练方案存储类型
 static NSString * const RecordTypeWorkoutPlan = @"WorkoutPlan";
@@ -85,16 +86,23 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     return plan;
 }
 
-- (BOOL)addWorkoutPlan:(WorkoutPlan *)workoutPlan{
+- (BOOL)addWorkoutPlan:(WorkoutPlan *)plan{
     if ([self.appSetting useICloudSchema]) {
-        [self.cloudManager addRecord:[workoutPlan iCloudRecord]];
+        @weakify(self);
+        CKRecord * record = [plan iCloudRecord];
+        [self.cloudManager addRecord:record withCompletionBlock:^(CKRecord * record){
+            @strongify(self);
+            [self insertNewICloudRecord:record];
+            [self cacheWorkoutPlan:plan];
+        }];
     }else{
-        [self cacheWorkoutPlan:workoutPlan];
+        [self cacheWorkoutPlan:plan];
     }
     
     return YES;
 }
 
+// 缓存对象到内存中
 - (BOOL)cacheWorkoutPlan:(WorkoutPlan *)workoutPlan{
     for (WorkoutPlan * obj in _internalWorkoutPlans) {
         if ([obj.objectId isEqualToNumber:workoutPlan.objectId]) {
@@ -106,6 +114,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     return true;
 }
 
+// 删除训练方案入口
 - (BOOL)deleteWorkoutPlan:(WorkoutPlan *)plan{
     if (! [_internalWorkoutPlans containsObject:plan]) {
         return NO;
@@ -138,7 +147,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 
 - (BOOL)updateWorkoutPlan:(WorkoutPlan *)plan{
     if (! [_internalWorkoutPlans containsObject:plan]) {
-        return false;
+        return NO;
     }
     
     if ([self.appSetting useICloudSchema]) {
@@ -160,25 +169,26 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
         [self saveToDisk];
     }
     
-    return true;
+    return YES;
 }
 
 // 向服务器查询训练方案
-- (void)queryFromICloud{
-    [self.cloudManager recordsWithType:RecordTypeWorkoutPlan from:self action:@selector(handleReceivedRecords:)];
+- (void)queryFromICloud{    
+    [self.cloudManager queryRecordsWithCompletionBlock:^(NSArray * records){
+        // 缓存 iCloud 中查询到的所有记录
+        self.cloudRecords = records;
+        
+        // 将 iCloud 记录转换成 WorkoutPlan 实例对象
+        for (CKRecord * record in records) {
+            WorkoutPlan * plan = [[WorkoutPlan alloc] initWithICloudRecord:record];
+            [[WorkoutPlanCache sharedInstance] cacheWorkoutPlan:plan];
+        }
+    }];
 }
 
-// 处理查询到的数据
-- (void)handleReceivedRecords:(NSArray *)records{
-    // 缓存 iCloud 中查询到的所有记录
-    self.cloudRecords = records;
-    
-    // 将 iCloud 记录转换成 WorkoutPlan 实例对象
-    for (CKRecord * record in records) {
-        WorkoutPlan * plan = [[WorkoutPlan alloc] initWithICloudRecord:record];
-        [[WorkoutPlanCache sharedInstance] cacheWorkoutPlan:plan];
-    }
+#pragma mark - BDiCloudDelegate
+- (NSString *)recordType{
+    return RecordTypeWorkoutPlan;
 }
-
 
 @end

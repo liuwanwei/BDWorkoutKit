@@ -20,6 +20,9 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
     
     __weak CKContainer * _container;
     __weak CKDatabase * _privateDatabase;
+    
+    RecordsReceivedBLock _recordsReceivedBlock;
+    RecordSavedBlock _recordSavedBlock;
 }
 
 + (instancetype)sharedInstance{
@@ -92,11 +95,7 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
     
 }
 
-
-/**
- *  从 iCloud CloudKit 服务查询所有训练结果
- */
-- (void)queryRecordsWithType:(NSString *)recordType{
+- (void)finalQueryRecord:(NSString *)type{
     @weakify(self);
     
     [_container accountStatusWithCompletionHandler:^(CKAccountStatus accountStatus, NSError * error){
@@ -104,7 +103,7 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
         if (accountStatus == CKAccountStatusAvailable) {
             // 设备账号的 iCloud 服务可用，查询所有数据
             NSPredicate * predict = [NSPredicate predicateWithValue:YES];
-            CKQuery * query = [[CKQuery alloc] initWithRecordType:recordType predicate:predict];
+            CKQuery * query = [[CKQuery alloc] initWithRecordType:type predicate:predict];
             
             [_privateDatabase performQuery:query  inZoneWithID:nil completionHandler:^(NSArray * results, NSError * error){
                 
@@ -114,10 +113,30 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
                     if (self.delegate && [self.delegate respondsToSelector:@selector(didReceiveWorkoutResults:)]) {
                         [self.delegate performSelector:@selector(didReceiveWorkoutResults:) withObject:results];
                     }
+                    
+                    if (_recordsReceivedBlock) {
+                        _recordsReceivedBlock(results);
+                    }
                 }
             }];
         }
     }];
+}
+
+- (void)queryRecordsWithCompletionBlock:(RecordsReceivedBLock)block{
+    _recordsReceivedBlock = block;
+    
+    // 通过托管获取要查询的记录类型
+    NSString * type = (NSString *)[self.delegate performSelector:@selector(recordType)];
+    
+    [self finalQueryRecord:type];
+}
+
+/**
+ *  从 iCloud CloudKit 服务查询所有训练结果
+ */
+- (void)queryRecordsWithType:(NSString *)recordType{
+    [self finalQueryRecord:recordType];
 }
 
 /**
@@ -150,13 +169,7 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
     }];
 }
 
-
-/**
- *  将新的训练结果保存到 iCloud 中去
- *
- *  @param result WorkoutResult object
- */
-- (void)addRecord:(CKRecord *)record{
+- (void)finalAddRecord:(CKRecord *)record{
     @weakify(self);
     
     // 先查用户是否有权限，再做后续动作
@@ -172,12 +185,30 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
                     if (self.delegate && [self.delegate respondsToSelector:@selector(successfullySavedRecord:)]) {
                         [self.delegate performSelector:@selector(successfullySavedRecord:) withObject:record];
                     }
+                    
+                    if (_recordSavedBlock) {
+                        _recordSavedBlock(record);
+                    }
                 }
             }];
         }else{
             [self iCloudNotEnabledHandler];
         }
     }];
+}
+
+/**
+ *  将新的训练结果保存到 iCloud 中去
+ *
+ *  @param result WorkoutResult object
+ */
+- (void)addRecord:(CKRecord *)record{
+    [self finalAddRecord:record];
+}
+
+- (void)addRecord:(CKRecord *)record withCompletionBlock:(RecordSavedBlock)block{
+    _recordSavedBlock = block;
+    [self finalAddRecord:record];
 }
 
 

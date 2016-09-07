@@ -9,8 +9,18 @@
 #import <Foundation/Foundation.h>
 #import <CloudKit/CloudKit.h>
 
+// 查询对象成功后执行的 block
+typedef void (^RecordsReceivedBLock)(NSArray * records);
+
+// 保存对象到 iCloud 成功后执行的 block
+typedef void (^RecordSavedBlock)(CKRecord * record);
+
 @protocol BDiCloudDelegate <NSObject>
 
+@required
+- (NSString *)recordType;
+
+@optional
 - (void)successfullySavedRecord:(CKRecord *)record;
 - (void)didReceiveWorkoutResults:(NSArray *)results;
 
@@ -29,9 +39,11 @@
 - (BOOL)iCloudAvailable;
 
 - (void)queryRecordsWithType:(NSString *)recordType;
+// 用 delete 方式的添加记录
 - (void)addRecord:(CKRecord *)record;
-
-// 直接通过传入 sel 处理接收到的数据，不用通过 delegate
-- (void)recordsWithType:(NSString *)recordType from:(id)caller action:(SEL)sel;
+// 用 block 方式添加记录
+- (void)addRecord:(CKRecord *)record withCompletionBlock:(RecordSavedBlock)block;
+// 用 block 方式查询数据
+- (void)queryRecordsWithCompletionBlock:(RecordsReceivedBLock)block;
 
 @end
