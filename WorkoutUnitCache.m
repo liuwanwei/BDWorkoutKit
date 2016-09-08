@@ -59,7 +59,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     for (WorkoutUnit * unit in _internalWorkoutUnits) {
         if ([unit.workoutPlanId isEqualToNumber:workoutPlanId] &&
             [unit.objectId integerValue] > maxId) {
-            maxId = [unit.workoutPlanId integerValue];
+            maxId = [unit.objectId integerValue];
         }
     }
     
