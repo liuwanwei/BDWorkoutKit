@@ -18,9 +18,6 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
 @implementation BDiCloudManager{
     id _iCloudToken;
     
-    __weak CKContainer * _container;
-    __weak CKDatabase * _privateDatabase;
-    
     RecordsReceivedBLock _recordsReceivedBlock;
     RecordSavedBlock _recordSavedBlock;
 }

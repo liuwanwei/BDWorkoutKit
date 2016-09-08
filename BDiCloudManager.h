@@ -28,6 +28,9 @@ typedef void (^RecordSavedBlock)(CKRecord * record);
 
 @interface BDiCloudManager : NSObject
 
+@property (nonatomic, weak) CKContainer * container;
+@property (nonatomic, weak) CKDatabase * privateDatabase;
+
 @property (nonatomic, assign) id<BDiCloudDelegate> delegate;
 
 + (instancetype)sharedInstance;

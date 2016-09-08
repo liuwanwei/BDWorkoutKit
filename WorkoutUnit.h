@@ -10,13 +10,15 @@
 #import <UIKit/UIKit.h>
 #import <CloudKit/CloudKit.h>
 
+@class WorkoutPlan;
+
 @interface WorkoutUnit : BDiCloudModel
 
 // 标题，如：开合跳
 @property (nonatomic, copy) NSString * title;
-// 休息时长
+// 休息时长（秒）
 @property (nonatomic, copy) NSString * restTimeLength;
-// 锻炼时长
+// 锻炼时长（秒）
 @property (nonatomic, copy) NSString * workoutTimeLength;
 // 锻炼次数
 @property (nonatomic, strong) NSNumber * exerciseNumber;
@@ -46,5 +48,7 @@
 
 - (UIImage *)workoutPreviewImage;
 - (NSString *)detailsContent;
+
+- (WorkoutPlan *)workoutPlan;
 
 @end

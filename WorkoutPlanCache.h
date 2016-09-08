@@ -32,6 +32,9 @@
 // 查询内置的训练方案
 + (NSArray *)builtInWorkoutPlans;
 
+// 查询 objectId 对应的训练方案对象
+- (WorkoutPlan *)workoutPlanWithId:(NSNumber *)objectId;
+
 /**
  * 新建训练方案。
  * 注意：新建训练方案必须使用这个接口，接口内部会为训练方案创建唯一 Id；

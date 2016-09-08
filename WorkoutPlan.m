@@ -7,6 +7,8 @@
 //
 
 #import "WorkoutPlan.h"
+#import "WorkoutUnit.h"
+#import "WorkoutUnitCache.h"
 
 // iCloud 上数据表名字
 static NSString * const RecordTypeWorkoutPlan = @"WorkoutPlan";
@@ -32,12 +34,6 @@ static NSString * const HeaderImage = @"headerImage";
     return self;
 }
 
-- (CKRecord *)iCloudRecord{
-    CKRecord * record = [super baseICloudRecordWithType:RecordTypeWorkoutPlan];
-    [self updateCloudRecord:record];
-    return record;
-}
-
 - (BOOL)isBuiltInPlan{
     NSInteger type = [self.type integerValue];
     if (type != PlanTypeHIIT) {
@@ -47,11 +43,23 @@ static NSString * const HeaderImage = @"headerImage";
     return NO;
 }
 
-- (void)updateCloudRecord:(CKRecord *)record{
+// 将当前实例的属性同步到对应的 CKRecord 实例中
+- (void)updateICloudRecord:(CKRecord *)record{
     [record setObject:self.type forKey:Type];
     [record setObject:self.title forKey:Title];
     [record setObject:self.cover forKey:Cover];
     [record setObject:self.headerImage forKey:HeaderImage];
+}
+
+// 更新训练方案中的训练时长、休息时长等动态信息
+- (void)updateDynamicProperties{
+    _workoutTime = 0;
+    _restTime = 0;
+    NSArray * units = [[WorkoutUnitCache sharedInstance] unitsForPlan:self];
+    for (WorkoutUnit * unit in units) {
+        _workoutTime += [unit.workoutTimeLength integerValue];
+        _restTime += [unit.restTimeLength integerValue];
+    }
 }
 
 @end

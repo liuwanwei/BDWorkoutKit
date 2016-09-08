@@ -13,16 +13,16 @@
 #import "WorkoutPlan.h"
 #import <CloudKit/CloudKit.h>
 #import <TMCache.h>
+#import <EXTScope.h>
 
+// iCloud 中使用的训练单元存储类型
+static NSString * const RecordTypeWorkoutUnit = @"WorkoutUnit";
+
+// TMCache 用到的存储所有训练单元的 Key
 static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
-
 
 @implementation WorkoutUnitCache{
     NSMutableArray * _internalWorkoutUnits;
-    
-    __weak WorkoutAppSetting * _appSetting;
-    __weak BDiCloudManager * _cloudManager;
-
 }
 
 + (instancetype)sharedInstance{
@@ -35,23 +35,6 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     });
     
     return sSharedInstance;
-}
-
-- (instancetype)init{
-    if (self = [super init]) {
-        _appSetting = [WorkoutAppSetting sharedInstance];
-        _cloudManager = [BDiCloudManager sharedInstance];
-    }
-    
-    return self;
-}
-
-- (void)load{
-    if ([_appSetting.useICloud boolValue]) {
-        // TODO: 从 iCloud 查询
-    }else{
-        [self loadFromDisk];
-    }
 }
 
 - (void)loadFromDisk{
@@ -88,60 +71,118 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 }
 
 - (BOOL)addWorkoutUnit:(WorkoutUnit *)unit{
-    BOOL ret = [self cacheWorkoutUnit:unit];
-    
-    if (ret) {
-        if ([_appSetting.useICloud boolValue]) {
-            [_cloudManager addRecord:[unit iCloudRecord]];
-        }else{
-            [self saveToDisk];
-        }
+    if ([self.appSetting useICloudSchema]){
+        @weakify(self);
+        CKRecord * record = [unit newICloudRecord:RecordTypeWorkoutUnit];
+        [self.cloudManager addRecord:record withCompletionBlock:^(CKRecord * record){
+            @strongify(self);
+            [self cacheWorkoutUnit:unit];
+            [self insertNewICloudRecord:record];
+
+            [[unit workoutPlan] updateDynamicProperties];
+        }];
+    }else{
+        [self cacheWorkoutUnit:unit];
+        [self saveToDisk];
     }
     
-    return ret;
+    return YES;
 }
 
 - (BOOL)cacheWorkoutUnit:(WorkoutUnit *)unit{
     for (WorkoutUnit * unit in _internalWorkoutUnits) {
         if ([unit.objectId isEqualToNumber:unit.objectId]) {
-            return false;
+            return NO;
         }
     }
     
     [_internalWorkoutUnits addObject:unit];
-    return true;
+    return YES;
 }
 
 
 - (BOOL)deleteWorkoutUnit:(WorkoutUnit *)unit{
     if (! [_internalWorkoutUnits containsObject:unit]) {
-        return false;
+        return NO;
     }
-    [_internalWorkoutUnits removeObject:unit];
-    
-    if ([_appSetting.useICloud boolValue]) {
-        // TODO: 从 iCloud 中删除
+
+    if ([self.appSetting useICloudSchema]){
+        @weakify(self);
+        CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:nil recordIDsToDelete:@[unit.cloudRecord.recordID]];
+        modifyRecord.qualityOfService = NSQualityOfServiceUserInitiated;
+        modifyRecord.modifyRecordsCompletionBlock = ^(NSArray * savedRecord, NSArray * deletedRecordIds, NSError * operationError){
+            @strongify(self);
+            if (! operationError) {
+                [_internalWorkoutUnits removeObject:unit];
+                // 从 cloudRecords 中删除
+                [self removeICloudRecord:deletedRecordIds[0]];
+
+                [[unit workoutPlan] updateDynamicProperties];
+                
+                // TODO: 提示删除成功
+                NSLog(@"删除 iCloud 记录成功");
+            }else{
+                // TODO: 提示删除失败
+                NSLog(@"删除 iCloud 记录失败");
+            }
+        };
+        [self.cloudManager.privateDatabase addOperation:modifyRecord];
     }else{
+        [_internalWorkoutUnits removeObject:unit];
         [self saveToDisk];
-    }
+    }    
     
-    return true;
+    return YES;
 }
 
 // 更新
 - (BOOL)updateWorkoutUnit:(WorkoutUnit *)unit{
     if (! [_internalWorkoutUnits containsObject:unit]) {
-        return false;
+        return NO;
     }
     
-    if ([_appSetting.useICloud boolValue]) {
-        // TODO: 修改后再添加会发生什么，请看代码学习
-        [_cloudManager addRecord:[unit iCloudRecord]];
-    }else{
+    if ([self.appSetting useICloudSchema]) {
+
+        // 将内存数据的修改同步到 iCloud 对象上
+        [unit updateICloudRecord:unit.cloudRecord];
+
+        CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:@[unit.cloudRecord] recordIDsToDelete:nil];
+        modifyRecord.savePolicy = CKRecordSaveAllKeys;
+        modifyRecord.qualityOfService = NSQualityOfServiceUserInitiated;
+        modifyRecord.modifyRecordsCompletionBlock = ^(NSArray * savedRecords, NSArray * deletedRecordIDs, NSError * operationError){
+            if (! operationError) {
+                // TODO: 提示修改成功
+                NSLog(@"修改 iCloud 记录成功");
+                [[unit workoutPlan] updateDynamicProperties];
+            }else{
+                // TODO: 提示修改失败
+                NSLog(@"修改 iCloud 记录失败");
+            }
+            
+        };
+        [self.cloudManager.privateDatabase addOperation:modifyRecord];
+    }else{        
         [self saveToDisk];
+        [[unit workoutPlan] updateDynamicProperties];
     }
     
-    return true;
+    return YES;
+}
+
+// 向服务器查询训练方案
+- (void)queryFromICloud{    
+    @weakify(self);
+    [self.cloudManager queryRecordsWithCompletionBlock:^(NSArray * records){
+        @strongify(self);
+        // 缓存 iCloud 中查询到的所有记录
+        self.cloudRecords = records;
+        
+        // 将 iCloud 记录转换成 WorkoutPlan 实例对象
+        for (CKRecord * record in records) {
+            WorkoutUnit * plan = [[WorkoutUnit alloc] initWithICloudRecord:record];
+            [self cacheWorkoutUnit:plan];
+        }
+    }];
 }
 
 // 查询训练方案下属的所有训练单元
@@ -154,6 +195,11 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     }
     
     return [units copy];
+}
+
+#pragma mark - BDiCloudDelegate
+- (NSString *)recordType{
+    return RecordTypeWorkoutUnit;
 }
 
 @end

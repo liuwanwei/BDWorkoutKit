@@ -24,8 +24,11 @@
 // iCloud/CloudKit 的 CKRecord 对象之间互相转换
 - (nullable instancetype)initWithICloudRecord:(nonnull CKRecord *)record;
 
+// 将需要上传到 iCloud 的属性更新到 CKRecord 对象里
+- (void)updateICloudRecord:(nonnull CKRecord *)record;
+
 // 将当前对象转换成 CKRecord 对象并返回
-- (nullable CKRecord *)iCloudRecord;
+- (nullable CKRecord *)newICloudRecord:(nonnull NSString *)type;
 
 // 派生类创建对象时绑定跟原始 CKRecord 指针的接口
 - (nonnull CKRecord *)baseICloudRecordWithType:(nonnull NSString *)recordType;

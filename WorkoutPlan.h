@@ -19,20 +19,23 @@ typedef enum{
 
 @interface WorkoutPlan : BDiCloudModel
 
+/* 自定义方案属性 */
+
 // 训练方案类型：WorkoutPlanType
 @property (nonatomic, strong) NSNumber * type;
-
 // 训练方案的名字，如：徒手训练·初级
 @property (nonatomic, copy) NSString * title;
-// 训练方案名字简介，显示在运动主页，如：徒手·初级
-@property (nonatomic, copy) NSString * briefDescription;
-// 是否需要器材，显示在训练方案列表中，如：无限器材，约7分钟
-@property (nonatomic, copy) NSString * equipment;
-
 // 显示在显示方案列表中的封面图
 @property (nonatomic, copy) NSString * cover;
 // 训练方案详情页顶部的背景图，如：hiit_intro_bg.jpg
 @property (nonatomic, copy) NSString * headerImage;
+
+/* 内置方案属性 */
+
+// 训练方案名字简介，显示在运动主页，如：徒手·初级
+@property (nonatomic, copy) NSString * briefDescription;
+// 是否需要器材，显示在训练方案列表中，如：无限器材，约7分钟
+@property (nonatomic, copy) NSString * equipment;
 
 // 训练单元定义文件名字，如：Workouts-Girl-Primary
 @property (nonatomic, copy) NSString * configFile;
@@ -40,9 +43,16 @@ typedef enum{
 // 训练方案的整体描述文件名字，如：desc-hiit-girl-primary.txt
 @property (nonatomic, copy) NSString * detailsBundleFile;
 
+/* 动态属性 */
+@property (nonatomic) NSInteger workoutTime;
+@property (nonatomic) NSInteger restTime;
+
 // 当前训练方案实例是不是系统内置的训练方案
 - (BOOL)isBuiltInPlan;
 
-- (void)updateCloudRecord:(CKRecord *)record;
+- (void)updateICloudRecord:(CKRecord *)record;
+
+// 重新计算动态属性：workoutTime, resetTime
+- (void)updateDynamicProperties;
 
 @end

@@ -42,10 +42,15 @@ static NSString * const ObjectId = @"objectId";
 }
 
 // 将当前对象转换成 CKRecord 对象并返回
-- (nullable CKRecord *)iCloudRecord{
-    // 派生类必须重载这个接口
-    return nil;
+- (nullable CKRecord *)newICloudRecord:(NSString *)type{
+    CKRecord * record = [self baseICloudRecordWithType:type];
+    [self updateICloudRecord:record];
+    return record;
 }
 
+// 派生类填充需要保存到 iCloud 中的属性
+- (void)updateICloudRecord:(CKRecord *)record{
+    @throw [NSException exceptionWithName:NSGenericException reason:@"派生类必须重载 BDiCloudModel 中声明的 updateICloudRecord 函数" userInfo:nil];
+}
 
 @end

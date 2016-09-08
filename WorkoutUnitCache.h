@@ -15,15 +15,14 @@
  */
 
 #import <Foundation/Foundation.h>
+#import "BaseCache.h"
 
 @class WorkoutUnit;
 @class WorkoutPlan;
 
-@interface WorkoutUnitCache : NSObject
+@interface WorkoutUnitCache : BaseCache
 
 + (instancetype)sharedInstance;
-
-- (void)load;
 
 - (WorkoutUnit *)newUnitForPlan:(NSNumber *)workoutPlanId;
 - (BOOL)addWorkoutUnit:(WorkoutUnit *)unit;

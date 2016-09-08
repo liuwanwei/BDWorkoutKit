@@ -89,14 +89,15 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 - (BOOL)addWorkoutPlan:(WorkoutPlan *)plan{
     if ([self.appSetting useICloudSchema]) {
         @weakify(self);
-        CKRecord * record = [plan iCloudRecord];
+        CKRecord * record = [plan newICloudRecord:RecordTypeWorkoutPlan];
         [self.cloudManager addRecord:record withCompletionBlock:^(CKRecord * record){
             @strongify(self);
-            [self insertNewICloudRecord:record];
             [self cacheWorkoutPlan:plan];
+            [self insertNewICloudRecord:record];            
         }];
     }else{
         [self cacheWorkoutPlan:plan];
+        [self saveToDisk];
     }
     
     return YES;
@@ -121,9 +122,11 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     }
     
     if ([self.appSetting useICloudSchema]) {
+        @weakify(self);
         CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:nil recordIDsToDelete:@[plan.cloudRecord.recordID]];
         modifyRecord.qualityOfService = NSQualityOfServiceUserInitiated;
         modifyRecord.modifyRecordsCompletionBlock = ^(NSArray * savedRecord, NSArray * deletedRecordIds, NSError * operationError){
+            @strongify(self);
             if (! operationError) {
                 [_internalWorkoutPlans removeObject:plan];
                 // 从 cloudRecords 中删除
@@ -131,12 +134,14 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
                 
                 // TODO: 提示删除成功
                 NSLog(@"删除 iCloud 记录成功");
+                
+                // TODO: 删除对应的训练单元
             }else{
                 // TODO: 提示删除失败
                 NSLog(@"删除 iCloud 记录失败");
             }
         };
-        [[[CKContainer defaultContainer] privateCloudDatabase] addOperation:modifyRecord];
+        [self.cloudManager.privateDatabase addOperation:modifyRecord];
     }else{
         [_internalWorkoutPlans removeObject:plan];
         [self saveToDisk];
@@ -151,9 +156,8 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     }
     
     if ([self.appSetting useICloudSchema]) {
-        
         // 将内存数据的修改同步到 iCloud 对象上
-        [plan updateCloudRecord:plan.cloudRecord];
+        [plan updateICloudRecord:plan.cloudRecord];
         
         CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:@[plan.cloudRecord] recordIDsToDelete:nil];
         modifyRecord.savePolicy = CKRecordSaveAllKeys;
@@ -168,7 +172,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
             }
             
         };
-        [[[CKContainer defaultContainer] privateCloudDatabase] addOperation:modifyRecord];
+        [self.cloudManager.privateDatabase addOperation:modifyRecord];
     }else{
         [self saveToDisk];
     }
@@ -178,16 +182,29 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 
 // 向服务器查询训练方案
 - (void)queryFromICloud{    
+    @weakify(self);
     [self.cloudManager queryRecordsWithCompletionBlock:^(NSArray * records){
+        @strongify(self);
         // 缓存 iCloud 中查询到的所有记录
         self.cloudRecords = records;
         
         // 将 iCloud 记录转换成 WorkoutPlan 实例对象
         for (CKRecord * record in records) {
             WorkoutPlan * plan = [[WorkoutPlan alloc] initWithICloudRecord:record];
-            [[WorkoutPlanCache sharedInstance] cacheWorkoutPlan:plan];
+            [self cacheWorkoutPlan:plan];
         }
     }];
+}
+
+// 查询 Id 对应的训练方案对象
+- (WorkoutPlan *)workoutPlanWithId:(NSNumber *)objectId{
+    for (WorkoutPlan * plan in _internalWorkoutPlans){
+        if ([plan.objectId isEqualToNumber:objectId]){
+            return plan;
+        }
+    }
+
+    return nil;
 }
 
 #pragma mark - BDiCloudDelegate

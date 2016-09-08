@@ -7,8 +7,38 @@
 //
 
 #import "WorkoutUnit.h"
+#import "WorkoutPlan.h"
+#import "WorkoutPlanCache.h"
+
+static NSString * const Title = @"title";
+static NSString * const WorkoutTimeLength = @"workoutTimeLength";
+static NSString * const RestTimeLength = @"RestTimeLength";
+static NSString * const ExerciseNumber = @"ExerciseNumber";
+static NSString * const WorkoutPlanId = @"workoutPlanId";
+
 
 @implementation WorkoutUnit
+
+- (instancetype)initWithICloudRecord:(CKRecord *)record{
+    if (self = [super initWithICloudRecord:record])
+    {
+        _title = [record objectForKey:Title];
+        _workoutTimeLength = [record objectForKey:WorkoutTimeLength];
+        _restTimeLength = [record objectForKey:RestTimeLength];
+        _exerciseNumber = [record objectForKey:ExerciseNumber];
+        _workoutPlanId = [record objectForKey:WorkoutPlanId];
+    }
+
+    return self;
+}
+
+- (WorkoutPlan *)workoutPlan{
+    if (_workoutPlanId != nil){
+        return [[WorkoutPlanCache sharedInstance] workoutPlanWithId:_workoutPlanId];
+    }else{
+        return nil;
+    }
+}
 
 - (UIImage *)workoutPreviewImage{
     if (_profileBundleImage.length > 0) {
@@ -43,9 +73,13 @@
     }
 }
 
-- (CKRecord *)iCloudRecordObject{
-    // TODO: 转换成 CKRecord 对象
-    return nil;
+// 将当前实例的属性同步到对应的 CKRecord 实例中
+- (void)updateICloudRecord:(CKRecord *)record{
+    [record setObject:self.title forKey:Title];
+    [record setObject:self.workoutTimeLength forKey:WorkoutTimeLength];
+    [record setObject:self.restTimeLength forKey:RestTimeLength];
+    [record setObject:self.exerciseNumber forKey:ExerciseNumber];
+    [record setObject:self.workoutPlanId forKey:WorkoutPlanId];
 }
 
 @end
