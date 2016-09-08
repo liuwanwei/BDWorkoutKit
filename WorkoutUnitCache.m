@@ -105,10 +105,13 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 - (BOOL)deleteWorkoutUnits:(NSArray *)units{
     NSMutableArray * deleteUnits = [NSMutableArray arrayWithCapacity:8];
     NSMutableArray * deleteRecordIds = [NSMutableArray arrayWithCapacity:8];
-    for(WorkoutUnit * unit in _internalWorkoutUnits){
+    for(WorkoutUnit * unit in units){
         if ([_internalWorkoutUnits containsObject:unit]) {    
             [deleteUnits addObject:unit];
-            [deleteRecordIds addObject:unit.cloudRecord.recordID];
+
+            if(unit.cloudRecord != nil){
+                [deleteRecordIds addObject:unit.cloudRecord.recordID];
+            }
         }
     }
 
