@@ -89,14 +89,14 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     return YES;
 }
 
-- (BOOL)cacheWorkoutUnit:(WorkoutUnit *)unit{
+- (BOOL)cacheWorkoutUnit:(WorkoutUnit *)newUnit{
     for (WorkoutUnit * unit in _internalWorkoutUnits) {
-        if ([unit.objectId isEqualToNumber:unit.objectId]) {
+        if ([unit.objectId isEqualToNumber:newUnit.objectId]) {
             return NO;
         }
     }
     
-    [_internalWorkoutUnits addObject:unit];
+    [_internalWorkoutUnits addObject:newUnit];
     return YES;
 }
 
