@@ -8,6 +8,7 @@
 
 #import "WorkoutPlanCache.h"
 #import "WorkoutPlan.h"
+#import "WorkoutUnitCache.h"
 #import "WorkoutAppSetting.h"
 #import "BDiCloudManager.h"
 #import "BDFoundation.h"
@@ -135,7 +136,9 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
                 // TODO: 提示删除成功
                 NSLog(@"删除 iCloud 记录成功");
                 
-                // TODO: 删除对应的训练单元
+                // 删除对应的训练单元
+                [self deleteUnitsForPlan:plan];                
+
             }else{
                 // TODO: 提示删除失败
                 NSLog(@"删除 iCloud 记录失败");
@@ -143,8 +146,10 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
         };
         [self.cloudManager.privateDatabase addOperation:modifyRecord];
     }else{
-        [_internalWorkoutPlans removeObject:plan];
+        [_internalWorkoutPlans removeObject:plan];        
         [self saveToDisk];
+
+        [self deleteUnitsForPlan:plan];
     }
     
     return YES;
@@ -178,6 +183,13 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     }
     
     return YES;
+}
+
+// 删除训练方案的所有训练单元，用于删除训练方案时
+- (void)deleteUnitsForPlan:(WorkoutPlan *)plan{
+    WorkoutUnitCache * unitCache = [WorkoutUnitCache sharedInstance];
+    NSArray * units = [unitCache unitsForPlan:plan];
+    [unitCache deleteWorkoutUnits:units];
 }
 
 // 向服务器查询训练方案

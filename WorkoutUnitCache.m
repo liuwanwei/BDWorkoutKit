@@ -102,23 +102,36 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 }
 
 
-- (BOOL)deleteWorkoutUnit:(WorkoutUnit *)unit{
-    if (! [_internalWorkoutUnits containsObject:unit]) {
+- (BOOL)deleteWorkoutUnits:(NSArray *)units{
+    NSMutableArray * deleteUnits = [NSMutableArray arrayWithCapacity:8];
+    NSMutableArray * deleteRecordIds = [NSMutableArray arrayWithCapacity:8];
+    for(WorkoutUnit * unit in _internalWorkoutUnits){
+        if ([_internalWorkoutUnits containsObject:unit]) {    
+            [deleteUnits addObject:unit];
+            [deleteRecordIds addObject:unit.cloudRecord.recordID];
+        }
+    }
+
+    if (deleteUnits.count == 0) {
         return NO;
     }
 
     if ([self.appSetting useICloudSchema]){
         @weakify(self);
-        CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:nil recordIDsToDelete:@[unit.cloudRecord.recordID]];
+        CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:nil recordIDsToDelete:deleteRecordIds];
         modifyRecord.qualityOfService = NSQualityOfServiceUserInitiated;
         modifyRecord.modifyRecordsCompletionBlock = ^(NSArray * savedRecord, NSArray * deletedRecordIds, NSError * operationError){
             @strongify(self);
             if (! operationError) {
-                [_internalWorkoutUnits removeObject:unit];
                 // 从 cloudRecords 中删除
-                [self removeICloudRecord:deletedRecordIds[0]];
+                for(CKRecordID * recordId in deletedRecordIds){
+                    [self removeICloudRecord:recordId];
+                }                
 
-                [[unit workoutPlan] updateDynamicProperties];
+                for(WorkoutUnit * unit in deleteUnits){
+                    [_internalWorkoutUnits removeObject:unit];
+                    [[unit workoutPlan] updateDynamicProperties];
+                }                
                 
                 // TODO: 提示删除成功
                 NSLog(@"删除 iCloud 记录成功");
@@ -129,7 +142,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
         };
         [self.cloudManager.privateDatabase addOperation:modifyRecord];
     }else{
-        [_internalWorkoutUnits removeObject:unit];
+        [_internalWorkoutUnits removeObject:deleteUnits];
         [self saveToDisk];
     }    
     
@@ -196,6 +209,10 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     }
     
     return [units copy];
+}
+
+- (NSInteger)totalUnitNumber{
+    return _internalWorkoutUnits.count;
 }
 
 #pragma mark - BDiCloudDelegate
