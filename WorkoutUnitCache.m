@@ -145,7 +145,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
         };
         [self.cloudManager.privateDatabase addOperation:modifyRecord];
     }else{
-        [_internalWorkoutUnits removeObject:deleteUnits];
+        [_internalWorkoutUnits removeObjectsInArray:deleteUnits];
         [self saveToDisk];
     }    
     
