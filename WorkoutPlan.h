@@ -13,7 +13,7 @@
 typedef enum{
     PlanTypeBuiltIn     = 0,
     PlanTypeHIIT        = 1,
-    PlanTypeEquitment   = 2,
+    PlanTypeEquipment   = 2,
     PlanTypeJumpRope    = 3,
 }WorkoutPlanType;
 
@@ -44,8 +44,14 @@ typedef enum{
 @property (nonatomic, copy) NSString * detailsBundleFile;
 
 /* 动态属性 */
-@property (nonatomic) NSInteger workoutTime;
-@property (nonatomic) NSInteger restTime;
+// 锻炼总时长（秒，不包含休息时间，HIIT、跳绳有效）
+@property (nonatomic) NSInteger workoutTimeLength;
+// 休息总时长（秒）
+@property (nonatomic) NSInteger restTimeLength;
+// 训练总组数（组，器械训练有效）
+@property (nonatomic) NSInteger groupNumber;
+// 动作总次数（次，器械训练有效）
+@property (nonatomic) NSInteger exerciseNumber;
 
 // 当前训练方案实例是不是系统内置的训练方案
 - (BOOL)isBuiltInPlan;
@@ -54,5 +60,7 @@ typedef enum{
 
 // 重新计算动态属性：workoutTime, resetTime
 - (void)updateDynamicProperties;
+
+- (NSString *)longDescription;
 
 @end

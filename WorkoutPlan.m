@@ -34,6 +34,7 @@ static NSString * const HeaderImage = @"headerImage";
     return self;
 }
 
+// 训练方案是不是内置的 4 种方案
 - (BOOL)isBuiltInPlan{
     NSInteger type = [self.type integerValue];
     if (type != PlanTypeHIIT) {
@@ -53,13 +54,52 @@ static NSString * const HeaderImage = @"headerImage";
 
 // 更新训练方案中的训练时长、休息时长等动态信息
 - (void)updateDynamicProperties{
-    _workoutTime = 0;
-    _restTime = 0;
+    _workoutTimeLength = 0;
+    _restTimeLength = 0;
+    _groupNumber = 0;
+    _exerciseNumber = 0;
+
+    NSInteger planType = [_type integerValue];    
     NSArray * units = [[WorkoutUnitCache sharedInstance] unitsForPlan:self];
+    _groupNumber = units.count;
     for (WorkoutUnit * unit in units) {
-        _workoutTime += [unit.workoutTimeLength integerValue];
-        _restTime += [unit.restTimeLength integerValue];
+        switch(planType){
+            case PlanTypeHIIT:
+            case PlanTypeJumpRope:
+                _workoutTimeLength += [unit.workoutTimeLength integerValue];
+                _restTimeLength += [unit.restTimeLength integerValue];
+                break;
+            case PlanTypeEquipment:
+                _exerciseNumber += [unit.exerciseNumber integerValue];
+                _restTimeLength += [unit.restTimeLength integerValue];
+                break;
+            default:
+                break;
+        }        
     }
+}
+
+- (NSString *)typeDescription{
+    WorkoutPlanType type = (WorkoutPlanType)[_type integerValue];
+    switch(type){
+        case PlanTypeHIIT:
+            return @"HIIT";
+        case PlanTypeEquipment:
+            return @"器械训练";
+        case PlanTypeJumpRope:
+            return @"跳绳训练";
+        case PlanTypeBuiltIn:
+            return @"内置训练";
+    }
+}
+
+- (NSString *)longDescription{
+    NSString * desc = [NSString stringWithFormat:@"训练类型: %@", [self typeDescription]];
+    desc = [desc stringByAppendingFormat:@"\n训练时间: %ld 秒", _workoutTimeLength];
+    desc = [desc stringByAppendingFormat:@"\n休息时间: %ld 秒", _restTimeLength];
+    desc = [desc stringByAppendingFormat:@"\n训练组数: %ld 组", _groupNumber];
+    desc = [desc stringByAppendingFormat:@"\n训练次数: %ld 次", _exerciseNumber];
+    return desc;
 }
 
 @end

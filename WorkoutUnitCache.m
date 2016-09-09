@@ -84,6 +84,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     }else{
         [self cacheWorkoutUnit:unit];
         [self saveToDisk];
+        [[unit workoutPlan] updateDynamicProperties];
     }
     
     return YES;
@@ -147,6 +148,11 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     }else{
         [_internalWorkoutUnits removeObjectsInArray:deleteUnits];
         [self saveToDisk];
+
+        // 更新动态信息
+        for(WorkoutUnit * unit in deleteUnits){
+            [[unit workoutPlan] updateDynamicProperties];
+        }
     }    
     
     return YES;

@@ -59,6 +59,11 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     }else{
         _internalWorkoutPlans = [[NSMutableArray alloc] init];
     }
+
+    // 计算动态属性：运动总时间、休息总时间、动作次数、动作组数
+    for(WorkoutPlan * plan in _internalWorkoutPlans){
+        [plan updateDynamicProperties];
+    }
 }
 
 // 数据缓存到本地
@@ -203,6 +208,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
         // 将 iCloud 记录转换成 WorkoutPlan 实例对象
         for (CKRecord * record in records) {
             WorkoutPlan * plan = [[WorkoutPlan alloc] initWithICloudRecord:record];
+            [plan updateDynamicProperties];
             [self cacheWorkoutPlan:plan];
         }
     }];
