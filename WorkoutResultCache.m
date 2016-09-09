@@ -16,9 +16,7 @@ static NSString * const RecordTypeWorkoutResult = @"WorkoutResult";
 // TMCache 使用的存储键值
 static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
 
-@implementation WorkoutResultCache{
-    NSMutableArray * _internalWorkoutResults;
-}
+@implementation WorkoutResultCache
 
 + (instancetype)sharedInstance{
     static WorkoutResultCache * sSharedInstance = nil;
@@ -31,24 +29,6 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     
     return sSharedInstance;
 }
-
-// 从本地加载训练结果
-- (void)loadFromDisk{
-    TMDiskCache * cache = [TMDiskCache sharedCache];
-    // 初始化训练记录数据
-    NSArray * temp = (NSArray *)[cache objectForKey:WorkoutResultsKey];
-    if (temp) {
-        _internalWorkoutResults = [temp mutableCopy];
-    }else{
-        _internalWorkoutResults = [[NSMutableArray alloc] init];
-    }
-}
-
-- (void)saveToDisk{
-    TMDiskCache * cache = [TMDiskCache sharedCache];
-    [cache setObject:_internalWorkoutResults forKey:WorkoutResultsKey];
-}
-
 
 - (void)queryFromICloud{
     @weakify(self);
@@ -71,7 +51,7 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
  *  @return 不可修改的训练结果数组
  */
 - (NSArray *)workoutResults{
-    return [_internalWorkoutResults copy];
+    return [self.internalObjects copy];
 }
 
 - (BOOL)addWorkoutResult:(WorkoutResult *)result{
@@ -92,14 +72,14 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
 }
 
 - (BOOL)cacheWorkoutResult:(WorkoutResult *)newResult{
-    for (WorkoutResult * result in _internalWorkoutResults) {
+    for (WorkoutResult * result in self.internalObjects) {
         // 防止向缓存重复添加相同的记录
         if ([result.workoutTime isEqualToDate:newResult.workoutTime]) {
             return NO;
         }
     }
     
-    [_internalWorkoutResults addObject:newResult];
+    [self.internalObjects addObject:newResult];
     
     return YES;
 }
@@ -108,15 +88,17 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     if([self useICloudSchema]){
         // TODO: 
     }else{
-        [_internalWorkoutResults removeObject:result];
+        [self.internalObjects removeObject:result];
         [self saveToDisk];
     }
 }
 
-#pragma mark - BDiCloudDelegate
-
 - (NSString *)recordType{
     return RecordTypeWorkoutResult;
+}
+
+- (NSString *)cacheKey{
+    return WorkoutResultsKey;
 }
 
 @end

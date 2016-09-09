@@ -21,9 +21,7 @@ static NSString * const RecordTypeWorkoutUnit = @"WorkoutUnit";
 // TMCache 用到的存储所有训练单元的 Key
 static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 
-@implementation WorkoutUnitCache{
-    NSMutableArray * _internalWorkoutUnits;
-}
+@implementation WorkoutUnitCache
 
 + (instancetype)sharedInstance{
     static WorkoutUnitCache * sSharedInstance = nil;
@@ -37,26 +35,9 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     return sSharedInstance;
 }
 
-- (void)loadFromDisk{
-    TMDiskCache * cache = [TMDiskCache sharedCache];
-    // 初始化训练记录数据
-    NSArray * temp = (NSArray *)[cache objectForKey:WorkoutUnitsKey];
-    if (temp) {
-        _internalWorkoutUnits = [temp mutableCopy];
-    }else{
-        _internalWorkoutUnits = [[NSMutableArray alloc] init];
-    }
-}
-
-- (void)saveToDisk{
-    TMDiskCache * cache = [TMDiskCache sharedCache];
-    [cache setObject:_internalWorkoutUnits forKey:WorkoutUnitsKey];
-}
-
-
 - (WorkoutUnit *)newUnitForPlan:(NSNumber *)workoutPlanId{
     NSInteger maxId = 0;
-    for (WorkoutUnit * unit in _internalWorkoutUnits) {
+    for (WorkoutUnit * unit in self.internalObjects) {
         if ([unit.workoutPlanId isEqualToNumber:workoutPlanId] &&
             [unit.objectId integerValue] > maxId) {
             maxId = [unit.objectId integerValue];
@@ -91,14 +72,14 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 }
 
 - (BOOL)cacheWorkoutUnit:(WorkoutUnit *)newUnit{
-    for (WorkoutUnit * unit in _internalWorkoutUnits) {
+    for (WorkoutUnit * unit in self.internalObjects) {
         if ([unit.workoutPlanId isEqualToNumber:newUnit.workoutPlanId] &&
             [unit.objectId isEqualToNumber:newUnit.objectId]) {
             return NO;
         }
     }
     
-    [_internalWorkoutUnits addObject:newUnit];
+    [self.internalObjects addObject:newUnit];
     return YES;
 }
 
@@ -107,7 +88,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     NSMutableArray * deleteUnits = [NSMutableArray arrayWithCapacity:8];
     NSMutableArray * deleteRecordIds = [NSMutableArray arrayWithCapacity:8];
     for(WorkoutUnit * unit in units){
-        if ([_internalWorkoutUnits containsObject:unit]) {    
+        if ([self.internalObjects containsObject:unit]) {    
             [deleteUnits addObject:unit];
 
             if(unit.cloudRecord != nil){
@@ -133,7 +114,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
                 }                
 
                 for(WorkoutUnit * unit in deleteUnits){
-                    [_internalWorkoutUnits removeObject:unit];
+                    [self.internalObjects removeObject:unit];
                     [[unit workoutPlan] updateDynamicProperties];
                 }                
                 
@@ -146,7 +127,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
         };
         [self.cloudManager.privateDatabase addOperation:modifyRecord];
     }else{
-        [_internalWorkoutUnits removeObjectsInArray:deleteUnits];
+        [self.internalObjects removeObjectsInArray:deleteUnits];
         [self saveToDisk];
 
         // 更新动态信息
@@ -160,7 +141,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 
 // 更新
 - (BOOL)updateWorkoutUnit:(WorkoutUnit *)unit{
-    if (! [_internalWorkoutUnits containsObject:unit]) {
+    if (! [self.internalObjects containsObject:unit]) {
         return NO;
     }
     
@@ -211,7 +192,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 // 查询训练方案下属的所有训练单元
 - (NSArray *)unitsForPlan:(WorkoutPlan *)plan{
     NSMutableArray * units = [[NSMutableArray alloc] init];
-    for (WorkoutUnit * unit in _internalWorkoutUnits) {
+    for (WorkoutUnit * unit in self.internalObjects) {
         if ([unit.workoutPlanId isEqualToNumber:plan.objectId]) {
             [units addObject:unit];
         }
@@ -221,12 +202,16 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 }
 
 - (NSInteger)totalUnitNumber{
-    return _internalWorkoutUnits.count;
+    return self.internalObjects.count;
 }
 
-#pragma mark - BDiCloudDelegate
+
 - (NSString *)recordType{
     return RecordTypeWorkoutUnit;
+}
+
+- (NSString *)cacheKey{
+    return WorkoutUnitsKey;
 }
 
 @end
