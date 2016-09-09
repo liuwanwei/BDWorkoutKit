@@ -24,5 +24,6 @@
  *  @param workoutResult 最近锻炼情况记录对象
  */
 - (BOOL)addWorkoutResult:(WorkoutResult *)workoutResult;
+- (void)deleteWorkoutResult:(WorkoutResult *)result;
 
 @end

@@ -91,17 +91,26 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     return YES;
 }
 
-- (BOOL)cacheWorkoutResult:(WorkoutResult *)result{
+- (BOOL)cacheWorkoutResult:(WorkoutResult *)newResult{
     for (WorkoutResult * result in _internalWorkoutResults) {
         // 防止向缓存重复添加相同的记录
-        if ([result.workoutTime isEqualToDate:result.workoutTime]) {
+        if ([result.workoutTime isEqualToDate:newResult.workoutTime]) {
             return NO;
         }
     }
     
-    [_internalWorkoutResults addObject:result];
+    [_internalWorkoutResults addObject:newResult];
     
     return YES;
+}
+
+- (void)deleteWorkoutResult:(WorkoutResult *)result{
+    if([self useICloudSchema]){
+        // TODO: 
+    }else{
+        [_internalWorkoutResults removeObject:result];
+        [self saveToDisk];
+    }
 }
 
 #pragma mark - BDiCloudDelegate
