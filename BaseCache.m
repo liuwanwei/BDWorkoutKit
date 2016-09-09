@@ -9,14 +9,16 @@
 #import "BaseCache.h"
 #import "BDiCloudManager.h"
 #import "WorkoutAppSetting.h"
+#import <TMCache.h>
 
 @implementation BaseCache
 
 - (instancetype)init{
     if (self = [super init]) {
-        self.cloudManager = [[BDiCloudManager alloc] init];
-        self.cloudManager.delegate = self;
-        self.appSetting = [WorkoutAppSetting sharedInstance];
+        _cloudManager = [[BDiCloudManager alloc] init];
+        _cloudManager.delegate = self;
+        _appSetting = [WorkoutAppSetting sharedInstance];
+        _internalObjects = [NSMutableArray arrayWithCapacity:12];
     }
     
     return self;
@@ -28,19 +30,11 @@
 }
 
 - (void)load{
-    if ([self.appSetting.useICloud boolValue]) {
+    if ([self useICloudSchema]) {
         [self queryFromICloud];
     }else{
         [self loadFromDisk];
     }
-}
-
-- (void)loadFromDisk{
-    @throw [NSException exceptionWithName:NSGenericException reason:@"派生类必须重载 BaseCache 中声明的 LoadFromDisk 函数" userInfo:nil];
-}
-
-- (void)saveToDisk{
-    @throw [NSException exceptionWithName:NSGenericException reason:@"派生类必须重载 BaseCache 中声明的 SaveToDisk 函数" userInfo:nil];
 }
 
 - (void)queryFromICloud{
@@ -74,8 +68,32 @@
     }
 }
 
-- (NSString *)recordType{
-    @throw [NSException exceptionWithName:NSGenericException reason:@"派生类必须重载 BaseCache 中声明的 RecordType 函数" userInfo:nil];
+// 从本地加载自定义训练方案
+- (void)loadFromDisk{
+    TMDiskCache * cache = [TMDiskCache sharedCache];
+    // 初始化训练记录数据
+    NSArray * temp = (NSArray *)[cache objectForKey:[self cacheKey]];
+    if (temp) {
+        _internalObjects = [temp mutableCopy];
+    }else{
+        _internalObjects = [[NSMutableArray alloc] init];
+    }    
 }
+
+// 数据缓存到本地
+- (void)saveToDisk{
+    TMDiskCache * cache = [TMDiskCache sharedCache];
+    [cache setObject:_internalObjects forKey:[self cacheKey]];
+}
+
+// 派生类必须重载的两个接口
+- (NSString *)recordType{
+    @throw [NSException exceptionWithName:NSGenericException reason:@"派生类必须重载 BaseCache 中声明的 recordType 函数" userInfo:nil];
+}
+
+- (NSString *)cacheKey{
+    @throw [NSException exceptionWithName:NSGenericException reason:@"派生类必须重载 BaseCache 中声明的 cacheKey 函数" userInfo:nil];   
+}
+
 
 @end

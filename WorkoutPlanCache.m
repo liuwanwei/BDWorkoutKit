@@ -22,9 +22,7 @@ static NSString * const RecordTypeWorkoutPlan = @"WorkoutPlan";
 // TMCache 使用的存储键值
 static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 
-@implementation WorkoutPlanCache{
-    NSMutableArray * _internalWorkoutPlans;
-}
+@implementation WorkoutPlanCache
 
 + (instancetype)sharedInstance{
     static WorkoutPlanCache * sSharedInstance = nil;
@@ -49,36 +47,22 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     }
 }
 
-// 从本地加载自定义训练方案
 - (void)loadFromDisk{
-    TMDiskCache * cache = [TMDiskCache sharedCache];
-    // 初始化训练记录数据
-    NSArray * temp = (NSArray *)[cache objectForKey:WorkoutPlansKey];
-    if (temp) {
-        _internalWorkoutPlans = [temp mutableCopy];
-    }else{
-        _internalWorkoutPlans = [[NSMutableArray alloc] init];
-    }
+    [super loadFromDisk];
 
     // 计算动态属性：运动总时间、休息总时间、动作次数、动作组数
-    for(WorkoutPlan * plan in _internalWorkoutPlans){
+    for(WorkoutPlan * plan in self.internalObjects){
         [plan updateDynamicProperties];
     }
 }
 
-// 数据缓存到本地
-- (void)saveToDisk{
-    TMDiskCache * cache = [TMDiskCache sharedCache];
-    [cache setObject:_internalWorkoutPlans forKey:WorkoutPlansKey];
-}
-
 - (NSArray *)workoutPlans{
-    return [_internalWorkoutPlans copy];
+    return [self.internalObjects copy];
 }
 
 - (WorkoutPlan *)newWorkoutPlan:(WorkoutPlanType)type{
     NSInteger maxId = 10; // 自定义训练方案 Id 从 10 开始
-    for (WorkoutPlan * plan in _internalWorkoutPlans) {
+    for (WorkoutPlan * plan in self.internalObjects) {
         if ([plan.objectId integerValue] > maxId) {
             maxId = [plan.objectId integerValue];
         }
@@ -111,19 +95,19 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 
 // 缓存对象到内存中
 - (BOOL)cacheWorkoutPlan:(WorkoutPlan *)workoutPlan{
-    for (WorkoutPlan * obj in _internalWorkoutPlans) {
+    for (WorkoutPlan * obj in self.internalObjects) {
         if ([obj.objectId isEqualToNumber:workoutPlan.objectId]) {
             return NO;
         }
     }
     
-    [_internalWorkoutPlans addObject:workoutPlan];
+    [self.internalObjects addObject:workoutPlan];
     return true;
 }
 
 // 删除训练方案入口
 - (BOOL)deleteWorkoutPlan:(WorkoutPlan *)plan{
-    if (! [_internalWorkoutPlans containsObject:plan]) {
+    if (! [self.internalObjects containsObject:plan]) {
         return NO;
     }
     
@@ -134,7 +118,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
         modifyRecord.modifyRecordsCompletionBlock = ^(NSArray * savedRecord, NSArray * deletedRecordIds, NSError * operationError){
             @strongify(self);
             if (! operationError) {
-                [_internalWorkoutPlans removeObject:plan];
+                [self.internalObjects removeObject:plan];
                 // 从 cloudRecords 中删除
                 [self removeICloudRecord:deletedRecordIds[0]];
                 
@@ -151,7 +135,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
         };
         [self.cloudManager.privateDatabase addOperation:modifyRecord];
     }else{
-        [_internalWorkoutPlans removeObject:plan];        
+        [self.internalObjects removeObject:plan];        
         [self saveToDisk];
 
         [self deleteUnitsForPlan:plan];
@@ -161,7 +145,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 }
 
 - (BOOL)updateWorkoutPlan:(WorkoutPlan *)plan{
-    if (! [_internalWorkoutPlans containsObject:plan]) {
+    if (! [self.internalObjects containsObject:plan]) {
         return NO;
     }
     
@@ -216,7 +200,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 
 // 查询 Id 对应的训练方案对象
 - (WorkoutPlan *)workoutPlanWithId:(NSNumber *)objectId{
-    for (WorkoutPlan * plan in _internalWorkoutPlans){
+    for (WorkoutPlan * plan in self.internalObjects){
         if ([plan.objectId isEqualToNumber:objectId]){
             return plan;
         }
@@ -225,9 +209,14 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     return nil;
 }
 
-#pragma mark - BDiCloudDelegate
+
+// 重载两个关键函数，告诉基类重要信息
 - (NSString *)recordType{
     return RecordTypeWorkoutPlan;
+}
+
+- (NSString *)cacheKey{
+    return WorkoutPlansKey;
 }
 
 @end

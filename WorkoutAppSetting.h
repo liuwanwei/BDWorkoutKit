@@ -41,7 +41,7 @@ typedef enum{
 
 + (instancetype)sharedInstance;
 
-- (void)syncDataToDisk;
+- (void)syncToDisk;
 
 /**
  *  注册 iCloud 消息通知 Handler

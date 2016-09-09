@@ -18,6 +18,9 @@
 @property (nonatomic, weak) WorkoutAppSetting * appSetting;
 @property (nonatomic, strong) BDiCloudManager * cloudManager;
 
+// 内存对象存储位置（外部接口不要访问）
+@property (nonatomic, strong) NSMutableArray * internalObjects;
+
 // 从 iCloud 查询到的数据
 @property (nonatomic, strong) NSArray * cloudRecords;
 

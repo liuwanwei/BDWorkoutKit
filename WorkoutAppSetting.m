@@ -72,7 +72,7 @@ static NSString * const AppSettingKey = @"AppSettingKey";
     return self;
 }
 
-- (void)syncDataToDisk{
+- (void)syncToDisk{
     [[TMDiskCache sharedCache] setObject:self forKey:AppSettingKey];
 }
 
