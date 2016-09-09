@@ -22,6 +22,11 @@
     return self;
 }
 
+// 对 useICloud 属性添加一层易于访问的封装
+- (BOOL)useICloudSchema{
+    return [self.appSetting.useICloud boolValue];
+}
+
 - (void)load{
     if ([self.appSetting.useICloud boolValue]) {
         [self queryFromICloud];

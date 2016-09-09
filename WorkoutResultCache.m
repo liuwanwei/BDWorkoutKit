@@ -7,18 +7,17 @@
 //
 
 #import "WorkoutResultCache.h"
-#import "WorkoutAppSetting.h"
 #import "WorkoutResult.h"
 #import <TMCache.h>
-#import <objc/runtime.h>
+#import <EXTScope.h>
 
+// iCloud 中使用的存储类型
+static NSString * const RecordTypeWorkoutResult = @"WorkoutResult";
+// TMCache 使用的存储键值
 static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
 
 @implementation WorkoutResultCache{
     NSMutableArray * _internalWorkoutResults;
-    
-    __weak WorkoutAppSetting * _appSetting;
-    __weak BDiCloudManager * _cloudManager;
 }
 
 + (instancetype)sharedInstance{
@@ -31,24 +30,6 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     });
     
     return sSharedInstance;
-}
-
-- (instancetype)init{
-    if (self = [super init]) {
-        _appSetting = [WorkoutAppSetting sharedInstance];
-        _cloudManager = [BDiCloudManager sharedInstance];
-        _cloudManager.delegate = self; // TODO: Deprecated
-    }
-    
-    return self;
-}
-
-- (void)load{
-    if ([_appSetting.useICloud boolValue]) {
-        [self queryICloudWorkoutRecords];
-    }else{
-        [self loadFromDisk];
-    }
 }
 
 // 从本地加载训练结果
@@ -69,17 +50,19 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
 }
 
 
-- (void)queryICloudWorkoutRecords{
-    [_cloudManager queryRecordsWithType:RecordTypeWorkoutResult];
-    
-}
-
-- (void)syncDataToIcloud{
-    for (WorkoutResult * workoutResult in _internalWorkoutResults) {
-        if (! [workoutResult.savedToICloud boolValue]) {
-            [_cloudManager addRecord:[workoutResult iCloudRecordObject]];
+- (void)queryFromICloud{
+    @weakify(self);
+    [self.cloudManager queryRecordsWithCompletionBlock:^(NSArray * records){
+        @strongify(self);
+        // 缓存 iCloud 中查询到的所有记录
+        self.cloudRecords = records;        
+        for (CKRecord * ckRecord in records) {
+            if ([ckRecord.recordType isEqualToString:RecordTypeWorkoutResult]) {
+                WorkoutResult * workoutResult = [[WorkoutResult alloc] initWithICloudRecord:ckRecord];
+                [self cacheWorkoutResult: workoutResult];
+            }
         }
-    }
+    }];
 }
 
 /**
@@ -91,28 +74,32 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     return [_internalWorkoutResults copy];
 }
 
-- (BOOL)addWorkoutResult:(WorkoutResult *)workoutResult{
-    BOOL ret = [self cacheWorkoutResult:workoutResult];
-    if (ret) {
-        if ([_appSetting.useICloud  boolValue]) {
-            [_cloudManager addRecord:[workoutResult iCloudRecordObject]];
-        }else{
-            [self saveToDisk];
-        }
+- (BOOL)addWorkoutResult:(WorkoutResult *)result{
+    if ([self useICloudSchema]) {
+        @weakify(self);
+        CKRecord * record = [result newICloudRecord:RecordTypeWorkoutResult];
+        [self.cloudManager addRecord:record withCompletionBlock:^(CKRecord * record){
+            @strongify(self);
+            [self cacheWorkoutResult:result];
+            [self insertNewICloudRecord:record];            
+        }];
+    }else{
+        [self cacheWorkoutResult:result];
+        [self saveToDisk];
     }
     
-    return ret;
+    return YES;
 }
 
-- (BOOL)cacheWorkoutResult:(WorkoutResult *)workoutResult{
+- (BOOL)cacheWorkoutResult:(WorkoutResult *)result{
     for (WorkoutResult * result in _internalWorkoutResults) {
         // 防止向缓存重复添加相同的记录
-        if ([result.workoutTime isEqualToDate:workoutResult.workoutTime]) {
+        if ([result.workoutTime isEqualToDate:result.workoutTime]) {
             return NO;
         }
     }
     
-    [_internalWorkoutResults addObject:workoutResult];
+    [_internalWorkoutResults addObject:result];
     
     return YES;
 }
@@ -122,33 +109,5 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
 - (NSString *)recordType{
     return RecordTypeWorkoutResult;
 }
-
-- (void)didReceiveWorkoutResults:(NSArray *)results{
-    if (results == nil || results.count <= 0) {
-        return;
-    }
-    
-    for (CKRecord * ckRecord in results) {
-        if ([ckRecord.recordType isEqualToString:RecordTypeWorkoutResult]) {
-            WorkoutResult * workoutResult = [[WorkoutResult alloc] initWithICloudRecord:ckRecord];
-            [self cacheWorkoutResult: workoutResult];
-        }
-    }
-    
-    // 检查是否有未上传到 iCloud 中的数据
-//    [self syncDataToIcloud];
-}
-
-/*
- * 训练结果添加到 iCloud 成功后，修改本地存储对象的同步状态
- */
-- (void)successfullySavedRecord:(CKRecord *)record{
-    id object = objc_getAssociatedObject(record, AssociatedWorkoutResult);
-    if (object) {
-        WorkoutResult * workoutResult = (WorkoutResult *)object;
-        workoutResult.savedToICloud = @(YES);
-    }
-}
-
 
 @end

@@ -9,10 +9,7 @@
 #import "WorkoutResult.h"
 #import <objc/runtime.h>
 
-NSInteger MaxWorkoutUnitCount = 1024;
-
-NSString * const RecordTypeWorkoutResult = @"WorkoutResult";
-const void * AssociatedWorkoutResult = "AssociatedWorkoutResult";
+NSInteger MaxWorkoutUnitCount = 128;
 
 static NSString * const WorkoutTime = @"workoutTime";
 static NSString * const ConsumedTime = @"consumedTime";
@@ -33,36 +30,26 @@ static NSString * const TotalNumber = @"totalNumber";
 
 
 - (instancetype)initWithICloudRecord:(CKRecord *)record{
-    if (self = [self init]) {
+    if (self = [super initWithICloudRecord:record]) {
         // 从 CKRecord 生成数据
         _workoutTime = [record objectForKey:WorkoutTime];
         _consumedTime = [record objectForKey:ConsumedTime];
         _pausedTimes = [record objectForKey:PausedTimes];
         _unitResults = [record objectForKey:UnitResults];
         _totalNumber = [record objectForKey:TotalNumber];
-        _savedToICloud = @(YES);
+        // _savedToICloud = @(YES);
     }
     
     return self;
 }
 
-/**
- * 将 WorkoutResult 对象转换为 CKRecord 对象（iCloud对象）
- */
-- (CKRecord *)iCloudRecordObject{
-    CKRecordZone * zone = [CKRecordZone defaultRecordZone];
-    CKRecord * record = [[CKRecord alloc] initWithRecordType:RecordTypeWorkoutResult zoneID:zone.zoneID];
+- (void)updateICloudRecord:(CKRecord *)record{
     [record setObject:self.workoutTime forKey:WorkoutTime];
     [record setObject:self.consumedTime forKey:ConsumedTime];
     [record setObject:self.pausedTimes forKey:PausedTimes];
     [record setObject:self.unitResults forKey:UnitResults];
-    
-    // 将当前对象的指针关联到 CRRecord 对象，用于上传到 iCloud 成功后，更新上传标志
-    objc_setAssociatedObject(record, AssociatedWorkoutResult, self, OBJC_ASSOCIATION_ASSIGN);
-    
-    return record;
+    [record setObject:self.totalNumber forKey:TotalNumber];
 }
-
 
 - (BOOL)addResult:(BOOL)result forUnit:(NSInteger)unitIndex{
     if (unitIndex < MaxWorkoutUnitCount) {

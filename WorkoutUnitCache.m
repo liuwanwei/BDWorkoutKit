@@ -71,7 +71,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 }
 
 - (BOOL)addWorkoutUnit:(WorkoutUnit *)unit{
-    if ([self.appSetting useICloudSchema]){
+    if ([self useICloudSchema]){
         @weakify(self);
         CKRecord * record = [unit newICloudRecord:RecordTypeWorkoutUnit];
         [self.cloudManager addRecord:record withCompletionBlock:^(CKRecord * record){
@@ -120,7 +120,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
         return NO;
     }
 
-    if ([self.appSetting useICloudSchema]){
+    if ([self useICloudSchema]){
         @weakify(self);
         CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:nil recordIDsToDelete:deleteRecordIds];
         modifyRecord.qualityOfService = NSQualityOfServiceUserInitiated;
@@ -164,7 +164,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
         return NO;
     }
     
-    if ([self.appSetting useICloudSchema]) {
+    if ([self useICloudSchema]) {
 
         // 将内存数据的修改同步到 iCloud 对象上
         [unit updateICloudRecord:unit.cloudRecord];

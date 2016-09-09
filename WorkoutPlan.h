@@ -61,6 +61,7 @@ typedef enum{
 // 重新计算动态属性：workoutTime, resetTime
 - (void)updateDynamicProperties;
 
+// 详细的描述信息，用在测试菜单中
 - (NSString *)longDescription;
 
 @end

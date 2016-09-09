@@ -24,6 +24,9 @@
 // 启动时加载数据
 - (void)load;
 
+// 判断是否启用了 iCloud 作为存储仓库
+- (BOOL)useICloudSchema;
+
 // 从 iCloud 查询数据
 - (void)queryFromICloud;
 - (BOOL)removeICloudRecord:(CKRecordID *)recordID;

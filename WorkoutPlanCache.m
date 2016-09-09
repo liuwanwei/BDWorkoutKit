@@ -17,9 +17,9 @@
 #import <TMCache.h>
 #import <EXTScope.h>
 
-// iCloud 中使用的训练方案存储类型
+// iCloud 中使用的存储类型
 static NSString * const RecordTypeWorkoutPlan = @"WorkoutPlan";
-// TMCache 使用的训练方案存储键值
+// TMCache 使用的存储键值
 static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 
 @implementation WorkoutPlanCache{
@@ -93,7 +93,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 }
 
 - (BOOL)addWorkoutPlan:(WorkoutPlan *)plan{
-    if ([self.appSetting useICloudSchema]) {
+    if ([self useICloudSchema]) {
         @weakify(self);
         CKRecord * record = [plan newICloudRecord:RecordTypeWorkoutPlan];
         [self.cloudManager addRecord:record withCompletionBlock:^(CKRecord * record){
@@ -127,7 +127,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
         return NO;
     }
     
-    if ([self.appSetting useICloudSchema]) {
+    if ([self useICloudSchema]) {
         @weakify(self);
         CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:nil recordIDsToDelete:@[plan.cloudRecord.recordID]];
         modifyRecord.qualityOfService = NSQualityOfServiceUserInitiated;
@@ -165,7 +165,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
         return NO;
     }
     
-    if ([self.appSetting useICloudSchema]) {
+    if ([self useICloudSchema]) {
         // 将内存数据的修改同步到 iCloud 对象上
         [plan updateICloudRecord:plan.cloudRecord];
         

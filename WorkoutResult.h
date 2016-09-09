@@ -6,14 +6,13 @@
 //  Copyright (c) 2015年 maoyu. All rights reserved.
 //
 
-#import "BaseModel.h"
+// #import "BaseModel.h"
+#import "BDiCloudModel.h"
 #import <CloudKit/CloudKit.h>
 
 extern NSInteger MaxWorkoutUnitCount;
-extern NSString * const RecordTypeWorkoutResult;
-extern const void *  AssociatedWorkoutResult;
 
-@interface WorkoutResult : BaseModel
+@interface WorkoutResult : BDiCloudModel
 
 /**
  *  锻炼开始日期时间
@@ -46,7 +45,7 @@ extern const void *  AssociatedWorkoutResult;
 /**
  *  是否已经成功保存到了 iCloud 上
  */
-@property (nonatomic, strong) NSNumber * savedToICloud;
+// @property (nonatomic, strong) NSNumber * savedToICloud;
 
 
 /**
@@ -60,10 +59,5 @@ extern const void *  AssociatedWorkoutResult;
 - (BOOL)addResult:(BOOL)result forUnit:(NSInteger)unitIndex;
 
 - (BOOL)resultForUnit:(NSInteger)unitIndex;
-
-
-// iCloud/CloudKit 的 CKRecord 对象之间互相转换
-- (instancetype)initWithICloudRecord:(CKRecord *)record;
-- (CKRecord *)iCloudRecordObject;
 
 @end
