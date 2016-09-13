@@ -15,6 +15,7 @@ static NSString * const WorkoutTime = @"workoutTime";
 static NSString * const ConsumedTime = @"consumedTime";
 static NSString * const PausedTimes = @"pausedTimes";
 static NSString * const UnitResults = @"unitResults";
+static NSString * const GroupNumber = @"groupNumber";
 static NSString * const TotalNumber = @"totalNumber";
 
 @implementation WorkoutResult
@@ -37,6 +38,7 @@ static NSString * const TotalNumber = @"totalNumber";
         _pausedTimes = [record objectForKey:PausedTimes];
         _unitResults = [record objectForKey:UnitResults];
         _totalNumber = [record objectForKey:TotalNumber];
+        _groupNumber = [record objectForKey:GroupNumber];
         // _savedToICloud = @(YES);
     }
     
@@ -49,8 +51,10 @@ static NSString * const TotalNumber = @"totalNumber";
     [record setObject:self.pausedTimes forKey:PausedTimes];
     [record setObject:self.unitResults forKey:UnitResults];
     [record setObject:self.totalNumber forKey:TotalNumber];
+    [record setObject:self.groupNumber forKey:GroupNumber];
 }
 
+// @Deprecated: 每个训练单元是否完成这个不需要统计
 - (BOOL)addResult:(BOOL)result forUnit:(NSInteger)unitIndex{
     if (unitIndex < MaxWorkoutUnitCount) {
         uint8_t * bytes = (uint8_t *)_unitResults.bytes;

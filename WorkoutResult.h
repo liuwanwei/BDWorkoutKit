@@ -29,6 +29,9 @@ extern NSInteger MaxWorkoutUnitCount;
  */
 @property (nonatomic, strong) NSString * workoutTitle;
 
+// 一共训练多少组
+@property (nonatomic, strong) NSNumber * groupNumber;
+
 /**
  *  训练过程中总共暂停了几次，不计时间，只要按下暂停就算一次
  */
