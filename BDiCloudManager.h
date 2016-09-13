@@ -38,6 +38,8 @@ typedef void (^RecordSavedBlock)(CKRecord * record);
 // 获取设备的 iCloud 可用状态，必须在主线程中调用
 - (void)fetchICloudToken;
 
+- (void)registerIdentityChangeNotification;
+
 // 返回设备的 iCloud 可用状态
 - (BOOL)iCloudAvailable;
 

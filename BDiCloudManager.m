@@ -29,9 +29,7 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (sInstance == nil) {
-            sInstance = [[BDiCloudManager alloc] init];
-            // 只给 sharedInstance 注册监听接口，所以必须在 App 启动时初始化 sharedInstance
-            [sInstance registerIdentityChangeNotification];
+            sInstance = [[BDiCloudManager alloc] init];            
         }
     });
     
