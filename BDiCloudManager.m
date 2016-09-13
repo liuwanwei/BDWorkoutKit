@@ -8,6 +8,7 @@
 
 #import "BDiCloudManager.h"
 #import "WorkoutResult.h"
+#import "WorkoutAppSetting.h"
 #import <EXTScope.h>
 
 static NSString * const AllRecords = @"TRUEPREDICATE";
@@ -29,6 +30,8 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
     dispatch_once(&onceToken, ^{
         if (sInstance == nil) {
             sInstance = [[BDiCloudManager alloc] init];
+            // 只给 sharedInstance 注册监听接口，所以必须在 App 启动时初始化 sharedInstance
+            [sInstance registerIdentityChangeNotification];
         }
     });
     
@@ -44,7 +47,41 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
     return self;
 }
 
-- (id)iCloudToken{
+// 注册 iCloud 可用状态改变事件处理
+- (void)registerIdentityChangeNotification{
+    if (self != [BDiCloudManager sharedInstance]){
+        @throw [NSException exceptionWithName:NSGenericException reason:@"只能有一个实例侦听这个消息" userInfo:nil];
+    }
+
+    [[NSNotificationCenter defaultCenter]
+        addObserver: self
+        selector: @selector(iCloudAccountAvailablityChanged:)
+        name: NSUbiquityIdentityDidChangeNotification
+        object: nil
+    ];
+}
+
+- (void)iCloudAccountAvailablityChanged:(NSNotification *)notification{
+    WorkoutAppSetting * setting = [WorkoutAppSetting sharedInstance];
+    if (! [setting useICloudSchema]){
+        return;
+    }
+
+    id currentToken = [self currentiCloudToken];
+    id oldToken = [self loadICloudToken];
+    if (currentToken) {        
+        if (oldToken && ![oldToken isEqual:currentToken]) {
+            // 有改变
+            // TODO: 清空旧的数据
+            // TODO: 查询新数据
+        }
+    }else{
+        
+    }
+}
+
+// 取出缓存在本地的 iCloud token
+- (id)loadICloudToken{
     NSData * data = [[NSUserDefaults standardUserDefaults] objectForKey:iCloudTokenKey];
     if (data) {
         return [NSKeyedUnarchiver unarchiveObjectWithData:data];
@@ -53,32 +90,27 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
     }
 }
 
-- (void)setICloudToken:(id)token{
+// 将 iCloud token 缓存在本地
+- (void)syncICloudTokenToDisk:(id)token{
     if (token) {
         NSData *newTokenData = [NSKeyedArchiver archivedDataWithRootObject: token];
         [[NSUserDefaults standardUserDefaults] setObject: newTokenData forKey: iCloudTokenKey];
     }else{
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:iCloudTokenKey];
     }
-    
+}
+
+// 取出当前 iCloud Token
+- (id)currentiCloudToken{
+    return [[NSFileManager defaultManager] ubiquityIdentityToken];
 }
 
 // 注意：必须在主线程中调用
 - (void)fetchICloudToken{
     // 取出当前 iCloud Token
-    NSFileManager* fileManager = [NSFileManager defaultManager];
-    id currentiCloudToken = fileManager.ubiquityIdentityToken;
-    
-    if (currentiCloudToken) {
-        id oldICloudToken = [self iCloudToken];
-        if (oldICloudToken && [oldICloudToken isEqual:currentiCloudToken]) {
-            // 有改变，需要清空旧的数据
-        }
-    }
-    
-    _iCloudToken = currentiCloudToken;
-    
-    [self setICloudToken:currentiCloudToken];
+    id currentToken = [self currentiCloudToken];
+    _iCloudToken = currentToken;    
+    [self syncICloudTokenToDisk:currentToken];
 }
 
 // 判断用户是否登录了 iCloud
@@ -92,6 +124,7 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
     
 }
 
+// 查询数据最终实现代码
 - (void)finalQueryRecord:(NSString *)type{
     @weakify(self);
     
