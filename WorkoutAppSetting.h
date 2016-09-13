@@ -19,6 +19,12 @@ typedef enum{
     HiitTypeJumpRope = 1
 }WorkoutHiitType;
 
+// 界面主色
+typedef enum{
+	MainColorTypeOrange = 0,
+	MainColorTypeBlue = 1
+}MainColorType;
+
 
 @interface WorkoutAppSetting : BaseModel
 
@@ -39,9 +45,14 @@ typedef enum{
 @property (nonatomic, strong) NSNumber * useICloud;         // 是否使用 iCloud 保存训练方案等数据，
                                                             // 不使用时，用 TMCache 保存数据
 
+@property (nonatomic, strong) NSNumber * mainColorType;		// 当前选择的主色，对应 MainColorType
+
 + (instancetype)sharedInstance;
 
 - (void)syncToDisk;
+
+// 对 useICloud 属性添加一层易于访问的封装
+- (BOOL)useICloudSchema;
 
 /**
  *  注册 iCloud 消息通知 Handler

@@ -84,6 +84,10 @@ static NSString * const AppSettingKey = @"AppSettingKey";
     [[WorkoutNotificationManager sharedInstance] cancelAllNotifications];
 }
 
+// 对 useICloud 属性添加一层易于访问的封装
+- (BOOL)useICloudSchema{
+    return [self.useICloud boolValue];
+}
 
 //- (void)registeriCloudSynchronizeService{
 //    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(iCloudStoreDidChange:) name:NSUbiquitousKeyValueStoreDidChangeExternallyNotification object:[NSUbiquitousKeyValueStore defaultStore]];

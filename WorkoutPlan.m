@@ -37,7 +37,7 @@ static NSString * const HeaderImage = @"headerImage";
 // 训练方案是不是内置的 4 种方案
 - (BOOL)isBuiltInPlan{
     NSInteger type = [self.type integerValue];
-    if (type != PlanTypeHIIT) {
+    if (type == PlanTypeBuiltIn) {
         return YES;
     }
     
