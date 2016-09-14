@@ -103,7 +103,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 - (void)deleteUnitsForPlan:(WorkoutPlan *)plan{
     WorkoutUnitCache * unitCache = [WorkoutUnitCache sharedInstance];
     NSArray * units = [unitCache unitsForPlan:plan];
-    [unitCache deleteWorkoutUnits:units];
+    [unitCache deleteObjects:units];
 }
 
 // 查询 Id 对应的训练方案对象

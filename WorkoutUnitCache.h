@@ -26,9 +26,6 @@
 
 - (WorkoutUnit *)newUnitForPlan:(NSNumber *)workoutPlanId;
 
-- (BOOL)deleteWorkoutUnits:(NSArray *)units;
-- (BOOL)updateWorkoutUnit:(WorkoutUnit *)unit;
-
 - (NSArray *)unitsForPlan:(WorkoutPlan *)plan;
 
 // 内存中一共有多少个训练单元（排错用）

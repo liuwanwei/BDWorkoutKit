@@ -51,95 +51,6 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     return unit;
 }
 
-- (BOOL)deleteWorkoutUnits:(NSArray *)units{
-    NSMutableArray * deleteUnits = [NSMutableArray arrayWithCapacity:8];
-    NSMutableArray * deleteRecordIds = [NSMutableArray arrayWithCapacity:8];
-    for(WorkoutUnit * unit in units){
-        if ([self.internalObjects containsObject:unit]) {    
-            [deleteUnits addObject:unit];
-
-            if(unit.cloudRecord != nil){
-                [deleteRecordIds addObject:unit.cloudRecord.recordID];
-            }
-        }
-    }
-
-    if (deleteUnits.count == 0) {
-        return NO;
-    }
-
-    if ([self useICloudSchema]){
-        @weakify(self);
-        CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:nil recordIDsToDelete:deleteRecordIds];
-        modifyRecord.qualityOfService = NSQualityOfServiceUserInitiated;
-        modifyRecord.modifyRecordsCompletionBlock = ^(NSArray * savedRecord, NSArray * deletedRecordIds, NSError * operationError){
-            @strongify(self);
-            if (! operationError) {
-                // 从 cloudRecords 中删除
-                for(CKRecordID * recordId in deletedRecordIds){
-                    [self removeICloudRecord:recordId];
-                }                
-
-                for(WorkoutUnit * unit in deleteUnits){
-                    [self.internalObjects removeObject:unit];
-                    [[unit workoutPlan] updateDynamicProperties];
-                }                
-                
-                // TODO: 提示删除成功
-                NSLog(@"删除 iCloud 记录成功");
-            }else{
-                // TODO: 提示删除失败
-                NSLog(@"删除 iCloud 记录失败");
-            }
-        };
-        [self.cloudManager.privateDatabase addOperation:modifyRecord];
-    }else{
-        [self.internalObjects removeObjectsInArray:deleteUnits];
-        [self saveToDisk];
-
-        // 更新动态信息
-        for(WorkoutUnit * unit in deleteUnits){
-            [[unit workoutPlan] updateDynamicProperties];
-        }
-    }    
-    
-    return YES;
-}
-
-// 更新
-- (BOOL)updateWorkoutUnit:(WorkoutUnit *)unit{
-    if (! [self.internalObjects containsObject:unit]) {
-        return NO;
-    }
-    
-    if ([self useICloudSchema]) {
-
-        // 将内存数据的修改同步到 iCloud 对象上
-        [unit updateICloudRecord:unit.cloudRecord];
-
-        CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:@[unit.cloudRecord] recordIDsToDelete:nil];
-        modifyRecord.savePolicy = CKRecordSaveAllKeys;
-        modifyRecord.qualityOfService = NSQualityOfServiceUserInitiated;
-        modifyRecord.modifyRecordsCompletionBlock = ^(NSArray * savedRecords, NSArray * deletedRecordIDs, NSError * operationError){
-            if (! operationError) {
-                // TODO: 提示修改成功
-                NSLog(@"修改 iCloud 记录成功");
-                [[unit workoutPlan] updateDynamicProperties];
-            }else{
-                // TODO: 提示修改失败
-                NSLog(@"修改 iCloud 记录失败");
-            }
-            
-        };
-        [self.cloudManager.privateDatabase addOperation:modifyRecord];
-    }else{        
-        [self saveToDisk];
-        [[unit workoutPlan] updateDynamicProperties];
-    }
-    
-    return YES;
-}
-
 // 查询训练方案下属的所有训练单元
 - (NSArray *)unitsForPlan:(WorkoutPlan *)plan{
     NSMutableArray * units = [[NSMutableArray alloc] init];
@@ -155,6 +66,25 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 // 测试用，显示在菜单上，看缓存中总数变化是否正确
 - (NSInteger)totalUnitNumber{
     return self.internalObjects.count;
+}
+
+// 需要重载的函数
+
+- (void)objectsDeleted:(NSArray *)objects withError:(NSError *)error{
+    if (!error){
+        // TODO: 提示删除成功
+    }else{
+        // TODO: 提示删除失败
+    }
+}
+
+- (void)objectUpdated:(BDiCloudModel *)object withError:(NSError *)error{
+    if (!error){
+        WorkoutUnit * unit = (WorkoutUnit *)object;
+        [[unit workoutPlan] updateDynamicProperties];
+    }else{
+        // TODO: 提示修改失败
+    }
 }
 
 - (NSString *)cacheKey{
