@@ -56,7 +56,7 @@ static NSString * const AppSettingKey = @"AppSettingKey";
         _muteSwitchOn = @(NO);
         _voiceType = @(PromptVoiceTypeGirl);
         _musicName = @"轻快.mp3";
-        _workoutPlanId = @(HiitTypeGirlElementary);
+        _workoutPlanId = @(0);// 默认选中第一个内置训练方案
         _mainColorType = @(MainColorTypeOrange);
         _useICloud = @(NO);
     }

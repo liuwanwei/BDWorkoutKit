@@ -9,17 +9,13 @@
 #import <Foundation/Foundation.h>
 #import "BDFoundation.h"
 
+// 提示音类型
 typedef enum{
     PromptVoiceTypeGirl = 0,
     PromptVoiceTypeBoy,
 }PromptVoiceType;
 
-typedef enum{
-    HiitTypeGirlElementary = 0,
-    HiitTypeJumpRope = 1
-}WorkoutHiitType;
-
-// 界面主色
+// 界面主颜色
 typedef enum{
 	MainColorTypeOrange = 0,
 	MainColorTypeBlue = 1
@@ -49,7 +45,6 @@ typedef enum{
 
 + (instancetype)sharedInstance;
 
-- (void)syncToDisk;
 
 // 对 useICloud 属性添加一层易于访问的封装
 - (BOOL)useICloudSchema;
