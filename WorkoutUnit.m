@@ -73,6 +73,15 @@ static NSString * const WorkoutPlanId = @"workoutPlanId";
     }
 }
 
+- (BOOL)isEqual:(id)newObject{
+    if([_workoutPlanId isEqualToNumber:[newObject workoutPlanId]] && 
+        [self.objectId isEqualToNumber:[newObject objectId]]){
+        return YES;
+    }else{
+        return NO;
+    }
+}
+
 // 将当前实例的属性同步到对应的 CKRecord 实例中
 - (void)updateICloudRecord:(CKRecord *)record{
     [record setObject:self.title forKey:Title];

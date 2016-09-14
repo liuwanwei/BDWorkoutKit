@@ -30,19 +30,6 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     return sSharedInstance;
 }
 
-- (void)queryFromICloud{
-    @weakify(self);
-    [self.cloudManager queryRecordsWithCompletionBlock:^(NSArray * records){
-        @strongify(self);
-        // 缓存 iCloud 中查询到的所有记录
-        self.cloudRecords = records;        
-        for (CKRecord * ckRecord in records) {
-            WorkoutResult * workoutResult = [[WorkoutResult alloc] initWithICloudRecord:ckRecord];
-            [self cacheWorkoutResult: workoutResult];
-        }
-    }];
-}
-
 /**
  *  函数特点请参考 dailyWeights
  *
@@ -58,26 +45,13 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
         CKRecord * record = [result newICloudRecord:RecordTypeWorkoutResult];
         [self.cloudManager addRecord:record withCompletionBlock:^(CKRecord * record){
             @strongify(self);
-            [self cacheWorkoutResult:result];
+            [self cacheObject:result];
             [self insertNewICloudRecord:record];            
         }];
     }else{
-        [self cacheWorkoutResult:result];
+        [self cacheObject:result];
         [self saveToDisk];
     }
-    
-    return YES;
-}
-
-- (BOOL)cacheWorkoutResult:(WorkoutResult *)newResult{
-    for (WorkoutResult * result in self.internalObjects) {
-        // 防止向缓存重复添加相同的记录
-        if ([result.workoutTime isEqualToDate:newResult.workoutTime]) {
-            return NO;
-        }
-    }
-    
-    [self.internalObjects addObject:newResult];
     
     return YES;
 }
@@ -91,12 +65,17 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     }
 }
 
-- (NSString *)recordType{
-    return RecordTypeWorkoutResult;
-}
-
 - (NSString *)cacheKey{
     return WorkoutResultsKey;
+}
+
+- (BDiCloudModel *)newCacheObjectWithICloudRecord:(CKRecord *)record{
+    WorkoutResult * result = [[WorkoutResult alloc] initWithICloudRecord:record];    
+    return result;
+}
+
+- (NSString *)recordType{
+    return RecordTypeWorkoutResult;
 }
 
 @end

@@ -82,27 +82,15 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
         CKRecord * record = [plan newICloudRecord:RecordTypeWorkoutPlan];
         [self.cloudManager addRecord:record withCompletionBlock:^(CKRecord * record){
             @strongify(self);
-            [self cacheWorkoutPlan:plan];
+            [self cacheObject:plan];
             [self insertNewICloudRecord:record];            
         }];
     }else{
-        [self cacheWorkoutPlan:plan];
+        [self cacheObject:plan];
         [self saveToDisk];
     }
     
     return YES;
-}
-
-// 缓存对象到内存中
-- (BOOL)cacheWorkoutPlan:(WorkoutPlan *)workoutPlan{
-    for (WorkoutPlan * obj in self.internalObjects) {
-        if ([obj.objectId isEqualToNumber:workoutPlan.objectId]) {
-            return NO;
-        }
-    }
-    
-    [self.internalObjects addObject:workoutPlan];
-    return true;
 }
 
 // 删除训练方案入口
@@ -182,21 +170,20 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 }
 
 // 向服务器查询训练方案
-- (void)queryFromICloud{    
-    @weakify(self);
-    [self.cloudManager queryRecordsWithCompletionBlock:^(NSArray * records){
-        @strongify(self);
-        // 缓存 iCloud 中查询到的所有记录
-        self.cloudRecords = records;
+// - (void)queryFromICloud{    
+//     @weakify(self);
+//     [self.cloudManager queryRecordsWithCompletionBlock:^(NSArray * records){
+//         @strongify(self);
+//         // 缓存 iCloud 中查询到的所有记录
+//         self.cloudRecords = records;
         
-        // 将 iCloud 记录转换成 WorkoutPlan 实例对象
-        for (CKRecord * record in records) {
-            WorkoutPlan * plan = [[WorkoutPlan alloc] initWithICloudRecord:record];
-            // [plan updateDynamicProperties]; TODO: 放到另一个地方来更新，不要放到查询里
-            [self cacheWorkoutPlan:plan];
-        }
-    }];
-}
+//         // 将 iCloud 记录转换成 WorkoutPlan 实例对象
+//         for (CKRecord * record in records) {
+//             WorkoutPlan * plan = [[WorkoutPlan alloc] initWithICloudRecord:record];
+//             [self cacheWorkoutPlan:plan];
+//         }
+//     }];
+// }
 
 // 查询 Id 对应的训练方案对象
 - (WorkoutPlan *)workoutPlanWithId:(NSNumber *)objectId{
@@ -210,13 +197,19 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 }
 
 
-// 重载两个关键函数，告诉基类重要信息
-- (NSString *)recordType{
-    return RecordTypeWorkoutPlan;
-}
+// 重载关键函数
 
 - (NSString *)cacheKey{
     return WorkoutPlansKey;
+}
+
+- (BDiCloudModel *)newCacheObjectWithICloudRecord:(CKRecord *)record{
+    WorkoutPlan * plan = [[WorkoutPlan alloc] initWithICloudRecord:record];
+    return plan;
+}
+
+- (NSString *)recordType{
+    return RecordTypeWorkoutPlan;
 }
 
 @end

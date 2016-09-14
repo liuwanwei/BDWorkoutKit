@@ -54,6 +54,10 @@ static NSString * const TotalNumber = @"totalNumber";
     [record setObject:self.groupNumber forKey:GroupNumber];
 }
 
+- (BOOL)isEqual:(id)newObject{
+    return [_workoutTime isEqualToDate:[newObject workoutTime]];
+}
+
 // @Deprecated: 每个训练单元是否完成这个不需要统计
 - (BOOL)addResult:(BOOL)result forUnit:(NSInteger)unitIndex{
     if (unitIndex < MaxWorkoutUnitCount) {

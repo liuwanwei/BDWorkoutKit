@@ -33,4 +33,6 @@
 // 派生类创建对象时绑定跟原始 CKRecord 指针的接口
 - (nonnull CKRecord *)baseICloudRecordWithType:(nonnull NSString *)recordType;
 
+//- (BOOL)isEqual:(nonnull id)object;
+
 @end

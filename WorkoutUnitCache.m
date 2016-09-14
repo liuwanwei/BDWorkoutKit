@@ -57,32 +57,16 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
         CKRecord * record = [unit newICloudRecord:RecordTypeWorkoutUnit];
         [self.cloudManager addRecord:record withCompletionBlock:^(CKRecord * record){
             @strongify(self);
-            [self cacheWorkoutUnit:unit];
+            [self cacheObject:unit];
             [self insertNewICloudRecord:record];
-
-            [[unit workoutPlan] updateDynamicProperties];
         }];
     }else{
-        [self cacheWorkoutUnit:unit];
+        [self cacheObject:unit];
         [self saveToDisk];
-        [[unit workoutPlan] updateDynamicProperties];
     }
     
     return YES;
 }
-
-- (BOOL)cacheWorkoutUnit:(WorkoutUnit *)newUnit{
-    for (WorkoutUnit * unit in self.internalObjects) {
-        if ([unit.workoutPlanId isEqualToNumber:newUnit.workoutPlanId] &&
-            [unit.objectId isEqualToNumber:newUnit.objectId]) {
-            return NO;
-        }
-    }
-    
-    [self.internalObjects addObject:newUnit];
-    return YES;
-}
-
 
 - (BOOL)deleteWorkoutUnits:(NSArray *)units{
     NSMutableArray * deleteUnits = [NSMutableArray arrayWithCapacity:8];
@@ -173,22 +157,6 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     return YES;
 }
 
-// 向服务器查询训练方案
-- (void)queryFromICloud{    
-    @weakify(self);
-    [self.cloudManager queryRecordsWithCompletionBlock:^(NSArray * records){
-        @strongify(self);
-        // 缓存 iCloud 中查询到的所有记录
-        self.cloudRecords = records;
-        
-        // 将 iCloud 记录转换成 WorkoutPlan 实例对象
-        for (CKRecord * record in records) {
-            WorkoutUnit * plan = [[WorkoutUnit alloc] initWithICloudRecord:record];
-            [self cacheWorkoutUnit:plan];
-        }
-    }];
-}
-
 // 查询训练方案下属的所有训练单元
 - (NSArray *)unitsForPlan:(WorkoutPlan *)plan{
     NSMutableArray * units = [[NSMutableArray alloc] init];
@@ -201,17 +169,22 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     return [units copy];
 }
 
+// 测试用，显示在菜单上，看缓存中总数变化是否正确
 - (NSInteger)totalUnitNumber{
     return self.internalObjects.count;
 }
 
+- (NSString *)cacheKey{
+    return WorkoutUnitsKey;
+}
+
+- (BDiCloudModel *)newCacheObjectWithICloudRecord:(CKRecord *)record{
+    WorkoutUnit * object = [[WorkoutUnit alloc] initWithICloudRecord:record];
+    return object;
+}
 
 - (NSString *)recordType{
     return RecordTypeWorkoutUnit;
-}
-
-- (NSString *)cacheKey{
-    return WorkoutUnitsKey;
 }
 
 @end
