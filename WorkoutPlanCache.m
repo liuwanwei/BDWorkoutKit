@@ -192,7 +192,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
         // 将 iCloud 记录转换成 WorkoutPlan 实例对象
         for (CKRecord * record in records) {
             WorkoutPlan * plan = [[WorkoutPlan alloc] initWithICloudRecord:record];
-            [plan updateDynamicProperties];
+            // [plan updateDynamicProperties]; TODO: 放到另一个地方来更新，不要放到查询里
             [self cacheWorkoutPlan:plan];
         }
     }];

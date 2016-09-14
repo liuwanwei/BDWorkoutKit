@@ -87,6 +87,8 @@
 }
 
 // 派生类必须重载的两个接口
+
+#pragma mark - BDiCloudManagerDelegate
 - (NSString *)recordType{
     @throw [NSException exceptionWithName:NSGenericException reason:@"派生类必须重载 BaseCache 中声明的 recordType 函数" userInfo:nil];
 }

@@ -37,10 +37,8 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
         // 缓存 iCloud 中查询到的所有记录
         self.cloudRecords = records;        
         for (CKRecord * ckRecord in records) {
-            if ([ckRecord.recordType isEqualToString:RecordTypeWorkoutResult]) {
-                WorkoutResult * workoutResult = [[WorkoutResult alloc] initWithICloudRecord:ckRecord];
-                [self cacheWorkoutResult: workoutResult];
-            }
+            WorkoutResult * workoutResult = [[WorkoutResult alloc] initWithICloudRecord:ckRecord];
+            [self cacheWorkoutResult: workoutResult];
         }
     }];
 }

@@ -13,7 +13,7 @@
 @class CKRecordID;
 @class CKRecord;
 
-@interface BaseCache : NSObject <BDiCloudDelegate>
+@interface BaseCache : NSObject <BDiCloudManagerDelegate>
 
 @property (nonatomic, weak) WorkoutAppSetting * appSetting;
 @property (nonatomic, strong) BDiCloudManager * cloudManager;

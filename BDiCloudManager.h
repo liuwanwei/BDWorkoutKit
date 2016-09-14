@@ -15,7 +15,8 @@ typedef void (^RecordsReceivedBLock)(NSArray * records);
 // 保存对象到 iCloud 成功后执行的 block
 typedef void (^RecordSavedBlock)(CKRecord * record);
 
-@protocol BDiCloudDelegate <NSObject>
+
+@protocol BDiCloudManagerDelegate <NSObject>
 
 @required
 - (NSString *)recordType;
@@ -31,7 +32,7 @@ typedef void (^RecordSavedBlock)(CKRecord * record);
 @property (nonatomic, weak) CKContainer * container;
 @property (nonatomic, weak) CKDatabase * privateDatabase;
 
-@property (nonatomic, assign) id<BDiCloudDelegate> delegate;
+@property (nonatomic, assign) id<BDiCloudManagerDelegate> delegate;
 
 + (instancetype)sharedInstance;
 
