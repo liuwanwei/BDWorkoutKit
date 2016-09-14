@@ -40,7 +40,10 @@
 
 // 删除对象入口和回调函数
 - (BOOL)deleteObject:(BDiCloudModel *)object;
-- (void)objectDeleted:(BDiCloudModel *)object withError:(NSError *)operationError;
+- (void)objectDeleted:(BDiCloudModel *)object withError:(NSError *)Error;
+
+- (BOOL)updateObject:(BDiCloudModel *)object;
+- (void)objectUpdated:(BDiCloudModel *)object withError:(NSError *)error;
 
 // 判断一个实例在内存缓存中是否存在
 - (BOOL)containsObject:(BDiCloudModel *)object;

@@ -38,8 +38,5 @@
  * 创建完成后，请调用 addObject 保存新的训练方案。
  */
 - (WorkoutPlan *)newWorkoutPlan:(WorkoutPlanType)type;
-//- (BOOL)addWorkoutPlan:(WorkoutPlan *)plan;
-// - (BOOL)deleteWorkoutPlan:(WorkoutPlan *)plan;
-- (BOOL)updateWorkoutPlan:(WorkoutPlan *)plan;
 
 @end

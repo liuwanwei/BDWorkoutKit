@@ -143,6 +143,10 @@
 
 // 删除训练方案入口
 - (BOOL)deleteObject:(BDiCloudModel *)object{    
+    if(! [self containsObject:object]){
+        return NO;
+    }
+
     if ([self useICloudSchema]) {
         @weakify(self);
         NSArray * recordsId = @[object.cloudRecord.recordID];
@@ -169,9 +173,36 @@
     return YES;
 }
 
+- (BOOL)updateObject:(BDiCloudModel *)object{
+    if (! [self containsObject:object]){
+        return NO;
+    }
+    
+    if ([self useICloudSchema]) {
+        // 将内存数据的修改同步到 iCloud 对象上
+        [object updateICloudRecord:object.cloudRecord];
+        NSArray * recordsId = @[object.cloudRecord];
+        CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:recordsId recordIDsToDelete:nil];
+        modifyRecord.savePolicy = CKRecordSaveAllKeys;
+        modifyRecord.qualityOfService = NSQualityOfServiceUserInitiated;
+        modifyRecord.modifyRecordsCompletionBlock = ^(NSArray * savedRecords, NSArray * deletedRecordIDs, NSError * operationError){
+            [self objectUpdated:object withError:operationError];
+        };
+        [self.cloudManager.privateDatabase addOperation:modifyRecord];
+    }else{
+        [self saveToDisk];
+        [self objectUpdated:object withError:nil];
+    }
+    
+    return YES;
+}
+
 // 派生类必须重载的接口
 
 - (void)objectDeleted:(BDiCloudModel *)object withError:(NSError *)operationError{
+}
+
+- (void)objectUpdated:(BDiCloudModel *)object withError:(NSError *)error{
 }
 
 - (NSString *)cacheKey{
