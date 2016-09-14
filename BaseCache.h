@@ -39,8 +39,8 @@
 - (BOOL)addObject:(BDiCloudModel *)newObject;
 
 // 删除对象入口和回调函数
-- (BOOL)deleteObject:(BDiCloudModel *)object;
-- (void)objectDeleted:(BDiCloudModel *)object withError:(NSError *)Error;
+- (BOOL)deleteObjects:(NSArray *)objects;
+- (void)objectsDeleted:(NSArray *)objects withError:(NSError *)Error;
 
 - (BOOL)updateObject:(BDiCloudModel *)object;
 - (void)objectUpdated:(BDiCloudModel *)object withError:(NSError *)error;

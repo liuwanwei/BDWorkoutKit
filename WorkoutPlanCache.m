@@ -74,10 +74,12 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     return plan;
 }
 
-- (void)objectDeleted:(BDiCloudModel *)object withError:(NSError *)operationError{
+- (void)objectsDeleted:(NSArray *)objects withError:(NSError *)operationError{
     if (!operationError){
-        // 删除对应的训练单元
-        [self deleteUnitsForPlan:(WorkoutPlan *)object];
+        // 删除训练方案下属训练单元
+        for(BDiCloudModel * object in objects){
+            [self deleteUnitsForPlan:(WorkoutPlan *)object];
+        }        
         
         // TODO: 提示删除成功
         NSLog(@"删除 iCloud 记录成功");        

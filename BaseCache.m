@@ -142,32 +142,49 @@
 }
 
 // 删除训练方案入口
-- (BOOL)deleteObject:(BDiCloudModel *)object{    
-    if(! [self containsObject:object]){
-        return NO;
+- (BOOL)deleteObjects:(NSArray *)objects{
+    NSMutableArray * deleteObjects = [NSMutableArray arrayWithCapacity:8];
+    NSMutableArray * deleteRecordIds = [NSMutableArray arrayWithCapacity:8];
+    for(BDiCloudModel * object in objects){
+        if ([self.internalObjects containsObject:object]) {    
+            [deleteObjects addObject:object];
+
+            if(object.cloudRecord != nil){
+                [deleteRecordIds addObject:object.cloudRecord.recordID];
+            }
+        }
     }
 
     if ([self useICloudSchema]) {
         @weakify(self);
-        NSArray * recordsId = @[object.cloudRecord.recordID];
-        CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:nil recordIDsToDelete:recordsId];
+        CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:nil recordIDsToDelete:deleteRecordIds];
         modifyRecord.qualityOfService = NSQualityOfServiceUserInitiated;
         modifyRecord.modifyRecordsCompletionBlock = ^(NSArray * savedRecord, NSArray * deletedRecordIds, NSError * operationError){
             @strongify(self);
             if (! operationError) {
-                [self.internalObjects removeObject:object];
+                // 从内存中删除
+                for(BDiCloudModel * object in deleteObjects){
+                    [self.internalObjects removeObject:object];
+                }                
+
                 // 从 cloudRecords 中删除
-                [self removeICloudRecord:deletedRecordIds[0]];
+                for(CKRecordID * recordId in deletedRecordIds){
+                    [self removeICloudRecord:recordId];
+                }                
             }
 
-            [self objectDeleted:object withError:operationError];
+            [self objectsDeleted:objects withError:operationError];
         };
         [self.cloudManager.privateDatabase addOperation:modifyRecord];
     }else{
-        [self.internalObjects removeObject:object];
+        // 从内存中删除
+        for(BDiCloudModel * object in deleteObjects){
+            [self.internalObjects removeObject:object];
+        }
+
         [self saveToDisk];
 
-        [self objectDeleted:object withError:nil];
+        [self objectsDeleted:deleteObjects withError:nil];
     }
     
     return YES;
@@ -199,7 +216,7 @@
 
 // 派生类必须重载的接口
 
-- (void)objectDeleted:(BDiCloudModel *)object withError:(NSError *)operationError{
+- (void)objectsDeleted:(NSArray *)objects withError:(NSError *)operationError{
 }
 
 - (void)objectUpdated:(BDiCloudModel *)object withError:(NSError *)error{
