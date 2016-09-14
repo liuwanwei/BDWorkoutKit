@@ -31,6 +31,9 @@
 // 虚函数，需要派生类重载
 - (BDiCloudModel *)newCacheObjectWithICloudRecord:(CKRecord *)record;
 
+// 添加新对象总入口
+- (BOOL)addObject:(BDiCloudModel *)newObject;
+
 // 将对象加入内存缓存
 - (BOOL)cacheObject:(BDiCloudModel *)newObject;
 

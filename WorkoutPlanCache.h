@@ -14,7 +14,7 @@
  * 添加新的训练方案：
  *      WorkoutPlan * plan = [[WorkoutPlanCache sharedInstance] newWorkoutPlan:PlanTypeHIIT];
  *      ...
- *      [[WorkoutPlanCache sharedInstance] addWorkoutPlan:plan];
+ *      [[WorkoutPlanCache sharedInstance] addObject:plan];
  *
  */
 
@@ -38,10 +38,10 @@
 /**
  * 新建训练方案。
  * 注意：新建训练方案必须使用这个接口，接口内部会为训练方案创建唯一 Id；
- * 创建完成后，请调用 addWorkoutPlan 保存新的训练方案。
+ * 创建完成后，请调用 addObject 保存新的训练方案。
  */
 - (WorkoutPlan *)newWorkoutPlan:(WorkoutPlanType)type;
-- (BOOL)addWorkoutPlan:(WorkoutPlan *)plan;
+//- (BOOL)addWorkoutPlan:(WorkoutPlan *)plan;
 - (BOOL)deleteWorkoutPlan:(WorkoutPlan *)plan;
 - (BOOL)updateWorkoutPlan:(WorkoutPlan *)plan;
 

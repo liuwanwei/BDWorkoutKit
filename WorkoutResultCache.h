@@ -19,11 +19,6 @@
 
 + (instancetype)sharedInstance;
 
-/**
- *  添加训练记录，包括添加到本地缓存和 iCloud 两个步骤
- *  @param workoutResult 最近锻炼情况记录对象
- */
-- (BOOL)addWorkoutResult:(WorkoutResult *)workoutResult;
 - (void)deleteWorkoutResult:(WorkoutResult *)result;
 
 @end

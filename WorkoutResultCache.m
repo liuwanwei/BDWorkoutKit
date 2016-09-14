@@ -39,23 +39,6 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     return [self.internalObjects copy];
 }
 
-- (BOOL)addWorkoutResult:(WorkoutResult *)result{
-    if ([self useICloudSchema]) {
-        @weakify(self);
-        CKRecord * record = [result newICloudRecord:RecordTypeWorkoutResult];
-        [self.cloudManager addRecord:record withCompletionBlock:^(CKRecord * record){
-            @strongify(self);
-            [self cacheObject:result];
-            [self insertNewICloudRecord:record];            
-        }];
-    }else{
-        [self cacheObject:result];
-        [self saveToDisk];
-    }
-    
-    return YES;
-}
-
 - (void)deleteWorkoutResult:(WorkoutResult *)result{
     if([self useICloudSchema]){
         // TODO: 从 iCloud 删除训练结果

@@ -51,23 +51,6 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     return unit;
 }
 
-- (BOOL)addWorkoutUnit:(WorkoutUnit *)unit{
-    if ([self useICloudSchema]){
-        @weakify(self);
-        CKRecord * record = [unit newICloudRecord:RecordTypeWorkoutUnit];
-        [self.cloudManager addRecord:record withCompletionBlock:^(CKRecord * record){
-            @strongify(self);
-            [self cacheObject:unit];
-            [self insertNewICloudRecord:record];
-        }];
-    }else{
-        [self cacheObject:unit];
-        [self saveToDisk];
-    }
-    
-    return YES;
-}
-
 - (BOOL)deleteWorkoutUnits:(NSArray *)units{
     NSMutableArray * deleteUnits = [NSMutableArray arrayWithCapacity:8];
     NSMutableArray * deleteRecordIds = [NSMutableArray arrayWithCapacity:8];

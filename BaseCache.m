@@ -9,6 +9,7 @@
 #import "BaseCache.h"
 #import "BDiCloudManager.h"
 #import "WorkoutAppSetting.h"
+#import "BDiCloudModel.h"
 #import <TMCache.h>
 #import <EXTScope.h>
 
@@ -108,6 +109,23 @@
     
     [self.internalObjects addObject:newObject];
     return true;
+}
+
+- (BOOL)addObject:(BDiCloudModel *)newObject{
+    if ([self useICloudSchema]) {
+        CKRecord * record = [newObject newICloudRecord:[self recordType]];
+        @weakify(self);
+        [self.cloudManager addRecord:record withCompletionBlock:^(CKRecord * record){
+            @strongify(self);
+            [self cacheObject:newObject];
+            [self insertNewICloudRecord:record];            
+        }];
+    }else{
+        [self cacheObject:newObject];
+        [self saveToDisk];
+    }
+    
+    return YES;
 }
 
 // 派生类必须重载的接口
