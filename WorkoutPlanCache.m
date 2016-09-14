@@ -51,14 +51,16 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     [super loadFromDisk];
 
     // 计算动态属性：运动总时间、休息总时间、动作次数、动作组数
-    for(WorkoutPlan * plan in self.internalObjects){
+    NSArray * plans = [self cachedObjects];
+    for(WorkoutPlan * plan in plans){
         [plan updateDynamicProperties];
     }
 }
 
 - (WorkoutPlan *)newWorkoutPlan:(WorkoutPlanType)type{
     NSInteger maxId = 10; // 自定义训练方案 Id 从 10 开始
-    for (WorkoutPlan * plan in self.internalObjects) {
+    NSArray * plans = [self cachedObjects];
+    for (WorkoutPlan * plan in plans) {
         if ([plan.objectId integerValue] > maxId) {
             maxId = [plan.objectId integerValue];
         }
@@ -72,47 +74,61 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     return plan;
 }
 
-// 删除训练方案入口
-- (BOOL)deleteWorkoutPlan:(WorkoutPlan *)plan{
-    if (! [self.internalObjects containsObject:plan]) {
-        return NO;
-    }
-    
-    if ([self useICloudSchema]) {
-        @weakify(self);
-        CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:nil recordIDsToDelete:@[plan.cloudRecord.recordID]];
-        modifyRecord.qualityOfService = NSQualityOfServiceUserInitiated;
-        modifyRecord.modifyRecordsCompletionBlock = ^(NSArray * savedRecord, NSArray * deletedRecordIds, NSError * operationError){
-            @strongify(self);
-            if (! operationError) {
-                [self.internalObjects removeObject:plan];
-                // 从 cloudRecords 中删除
-                [self removeICloudRecord:deletedRecordIds[0]];
-                
-                // TODO: 提示删除成功
-                NSLog(@"删除 iCloud 记录成功");
-                
-                // 删除对应的训练单元
-                [self deleteUnitsForPlan:plan];                
-
-            }else{
-                // TODO: 提示删除失败
-                NSLog(@"删除 iCloud 记录失败");
-            }
-        };
-        [self.cloudManager.privateDatabase addOperation:modifyRecord];
+- (void)objectDeleted:(BDiCloudModel *)object withError:(NSError *)operationError{
+    if (!operationError){
+        // 删除对应的训练单元
+        [self deleteUnitsForPlan:(WorkoutPlan *)object];
+        
+        // TODO: 提示删除成功
+        NSLog(@"删除 iCloud 记录成功");        
     }else{
-        [self.internalObjects removeObject:plan];        
-        [self saveToDisk];
-
-        [self deleteUnitsForPlan:plan];
+        // TODO: 提示删除失败
+        NSLog(@"删除 iCloud 记录失败");
     }
     
-    return YES;
 }
 
+// // 删除训练方案入口
+// - (BOOL)deleteWorkoutPlan:(WorkoutPlan *)plan{
+//     if(! [self containsObject:plan]){
+//         return NO;
+//     }
+    
+//     if ([self useICloudSchema]) {
+//         @weakify(self);
+//         CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:nil recordIDsToDelete:@[plan.cloudRecord.recordID]];
+//         modifyRecord.qualityOfService = NSQualityOfServiceUserInitiated;
+//         modifyRecord.modifyRecordsCompletionBlock = ^(NSArray * savedRecord, NSArray * deletedRecordIds, NSError * operationError){
+//             @strongify(self);
+//             if (! operationError) {
+//                 [self.internalObjects removeObject:plan];
+//                 // 从 cloudRecords 中删除
+//                 [self removeICloudRecord:deletedRecordIds[0]];
+                
+//                 // TODO: 提示删除成功
+//                 NSLog(@"删除 iCloud 记录成功");
+                
+//                 // 删除对应的训练单元
+//                 [self deleteUnitsForPlan:plan];                
+
+//             }else{
+//                 // TODO: 提示删除失败
+//                 NSLog(@"删除 iCloud 记录失败");
+//             }
+//         };
+//         [self.cloudManager.privateDatabase addOperation:modifyRecord];
+//     }else{
+//         [self.internalObjects removeObject:plan];        
+//         [self saveToDisk];
+
+//         [self deleteUnitsForPlan:plan];
+//     }
+    
+//     return YES;
+// }
+
 - (BOOL)updateWorkoutPlan:(WorkoutPlan *)plan{
-    if (! [self.internalObjects containsObject:plan]) {
+    if (! [self containsObject:plan]){
         return NO;
     }
     
@@ -150,7 +166,8 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 
 // 查询 Id 对应的训练方案对象
 - (WorkoutPlan *)workoutPlanWithId:(NSNumber *)objectId{
-    for (WorkoutPlan * plan in self.internalObjects){
+    NSArray * plans = [self cachedObjects];
+    for (WorkoutPlan * plan in plans){
         if ([plan.objectId isEqualToNumber:objectId]){
             return plan;
         }

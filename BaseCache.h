@@ -14,6 +14,7 @@
 @class CKRecord;
 @class BDiCloudModel;
 
+
 @interface BaseCache : NSObject <BDiCloudManagerDelegate>
 
 @property (nonatomic, weak) WorkoutAppSetting * appSetting;
@@ -36,6 +37,13 @@
 
 // 添加新对象总入口
 - (BOOL)addObject:(BDiCloudModel *)newObject;
+
+// 删除对象入口和回调函数
+- (BOOL)deleteObject:(BDiCloudModel *)object;
+- (void)objectDeleted:(BDiCloudModel *)object withError:(NSError *)operationError;
+
+// 判断一个实例在内存缓存中是否存在
+- (BOOL)containsObject:(BDiCloudModel *)object;
 
 // 将对象加入内存缓存
 - (BOOL)cacheObject:(BDiCloudModel *)newObject;

@@ -39,7 +39,7 @@
  */
 - (WorkoutPlan *)newWorkoutPlan:(WorkoutPlanType)type;
 //- (BOOL)addWorkoutPlan:(WorkoutPlan *)plan;
-- (BOOL)deleteWorkoutPlan:(WorkoutPlan *)plan;
+// - (BOOL)deleteWorkoutPlan:(WorkoutPlan *)plan;
 - (BOOL)updateWorkoutPlan:(WorkoutPlan *)plan;
 
 @end

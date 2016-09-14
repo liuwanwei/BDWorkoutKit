@@ -133,7 +133,46 @@
     return YES;
 }
 
+- (BOOL)containsObject:(BDiCloudModel *)object{
+    if ([_internalObjects containsObject:object]) {
+        return YES;
+    }else{
+        return NO;
+    }
+}
+
+// 删除训练方案入口
+- (BOOL)deleteObject:(BDiCloudModel *)object{    
+    if ([self useICloudSchema]) {
+        @weakify(self);
+        NSArray * recordsId = @[object.cloudRecord.recordID];
+        CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:nil recordIDsToDelete:recordsId];
+        modifyRecord.qualityOfService = NSQualityOfServiceUserInitiated;
+        modifyRecord.modifyRecordsCompletionBlock = ^(NSArray * savedRecord, NSArray * deletedRecordIds, NSError * operationError){
+            @strongify(self);
+            if (! operationError) {
+                [self.internalObjects removeObject:object];
+                // 从 cloudRecords 中删除
+                [self removeICloudRecord:deletedRecordIds[0]];
+            }
+
+            [self objectDeleted:object withError:operationError];
+        };
+        [self.cloudManager.privateDatabase addOperation:modifyRecord];
+    }else{
+        [self.internalObjects removeObject:object];
+        [self saveToDisk];
+
+        [self objectDeleted:object withError:nil];
+    }
+    
+    return YES;
+}
+
 // 派生类必须重载的接口
+
+- (void)objectDeleted:(BDiCloudModel *)object withError:(NSError *)operationError{
+}
 
 - (NSString *)cacheKey{
     @throw [NSException exceptionWithName:NSGenericException 
