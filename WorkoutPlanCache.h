@@ -10,7 +10,7 @@
  * 获取内置训练方案（徒手初级、徒手中级，跳绳初级、跳绳中级）：
  *      [[WorkoutPlanCache sharedInstance] builtInWorkoutPlans];
  * 获取自定义训练方案：
- *      [[WorkoutPlanCache sharedInstance] workoutPlans];
+ *      [[WorkoutPlanCache sharedInstance] cachedObjects];
  * 添加新的训练方案：
  *      WorkoutPlan * plan = [[WorkoutPlanCache sharedInstance] newWorkoutPlan:PlanTypeHIIT];
  *      ...
@@ -23,9 +23,6 @@
 #import "WorkoutPlan.h"
 
 @interface WorkoutPlanCache : BaseCache
-
-// 自定义训练方案数组（WorkoutPlan）
-@property (nonatomic, strong, readonly) NSArray * workoutPlans;
 
 + (instancetype)sharedInstance;
 

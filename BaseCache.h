@@ -22,6 +22,9 @@
 // 内存对象存储位置（外部接口不要访问）
 @property (nonatomic, strong) NSMutableArray * internalObjects;
 
+// 内存中缓存的对象的不可修改版本
+@property (nonatomic, strong, readonly) NSArray * cachedObjects;
+
 // 从 iCloud 查询到的数据
 @property (nonatomic, strong) NSArray * cloudRecords;
 

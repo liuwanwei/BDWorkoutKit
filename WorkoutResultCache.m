@@ -30,15 +30,6 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     return sSharedInstance;
 }
 
-/**
- *  函数特点请参考 dailyWeights
- *
- *  @return 不可修改的训练结果数组
- */
-- (NSArray *)workoutResults{
-    return [self.internalObjects copy];
-}
-
 - (void)deleteWorkoutResult:(WorkoutResult *)result{
     if([self useICloudSchema]){
         // TODO: 从 iCloud 删除训练结果

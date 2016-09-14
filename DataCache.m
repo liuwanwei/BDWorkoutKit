@@ -50,7 +50,7 @@
         }
     }
     
-    for (WorkoutPlan * plan in [[WorkoutPlanCache sharedInstance] workoutPlans]) {
+    for (WorkoutPlan * plan in [[WorkoutPlanCache sharedInstance] cachedObjects]) {
         if ([plan.objectId isEqualToNumber: selectedWorkoutPlan]) {
             _currentWorkoutPlan = plan;
             return;

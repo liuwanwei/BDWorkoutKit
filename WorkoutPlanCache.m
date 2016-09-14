@@ -56,10 +56,6 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     }
 }
 
-- (NSArray *)workoutPlans{
-    return [self.internalObjects copy];
-}
-
 - (WorkoutPlan *)newWorkoutPlan:(WorkoutPlanType)type{
     NSInteger maxId = 10; // 自定义训练方案 Id 从 10 开始
     for (WorkoutPlan * plan in self.internalObjects) {

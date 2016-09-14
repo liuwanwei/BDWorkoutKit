@@ -99,6 +99,11 @@
     [cache setObject:_internalObjects forKey:[self cacheKey]];
 }
 
+// 返回内部存储对象数组的不可修改版本
+- (NSArray *)cachedObjects{
+    return [_internalObjects copy];
+}
+
 // 将新建的对象添加到内存缓存中
 - (BOOL)cacheObject:(BDiCloudModel *)newObject{
     for (id obj in _internalObjects) {

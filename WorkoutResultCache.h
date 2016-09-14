@@ -14,9 +14,6 @@
 
 @interface WorkoutResultCache : BaseCache
 
-// 所有训练结果
-@property (nonatomic, strong, readonly) NSArray * workoutResults;
-
 + (instancetype)sharedInstance;
 
 - (void)deleteWorkoutResult:(WorkoutResult *)result;
