@@ -30,15 +30,6 @@ static NSString * const WorkoutResultsKey = @"WorkoutResultsKey";
     return sSharedInstance;
 }
 
-- (void)deleteWorkoutResult:(WorkoutResult *)result{
-    if([self useICloudSchema]){
-        // TODO: 从 iCloud 删除训练结果
-    }else{
-        [self.internalObjects removeObject:result];
-        [self saveToDisk];
-    }
-}
-
 - (NSString *)cacheKey{
     return WorkoutResultsKey;
 }

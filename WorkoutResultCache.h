@@ -16,6 +16,4 @@
 
 + (instancetype)sharedInstance;
 
-- (void)deleteWorkoutResult:(WorkoutResult *)result;
-
 @end
