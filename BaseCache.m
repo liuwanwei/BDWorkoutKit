@@ -102,7 +102,7 @@
 // 将新建的对象添加到内存缓存中
 - (BOOL)cacheObject:(BDiCloudModel *)newObject{
     for (id obj in _internalObjects) {
-        if (! [obj isEqual:newObject]) {
+        if ([obj isEqual:newObject]) {
             return NO;
         }
     }
@@ -118,7 +118,7 @@
         [self.cloudManager addRecord:record withCompletionBlock:^(CKRecord * record){
             @strongify(self);
             [self cacheObject:newObject];
-            [self insertNewICloudRecord:record];            
+            [self insertNewICloudRecord:record];
         }];
     }else{
         [self cacheObject:newObject];
