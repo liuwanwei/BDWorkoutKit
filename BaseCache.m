@@ -101,10 +101,17 @@
 
 // 返回内部存储对象数组的不可修改版本
 - (NSArray *)cachedObjects{
-    return [_internalObjects copy];
+    NSMutableArray * mutable = [NSMutableArray arrayWithCapacity:64];
+    for(BDiCloudModel * model in _internalObjects){
+        // 判断对象的删除标志，在 iCloud 环境下，排除需要从 iCloud 删除的数据
+        if (model.needDeleteFromICloud == nil || ![model.needDeleteFromICloud boolValue]){
+            [mutable addObject:model];
+        }
+    }
+    return [mutable copy];
 }
 
-// 将新建的对象添加到内存缓存中
+// 将新建的对象添加到内存中
 - (BOOL)cacheObject:(BDiCloudModel *)newObject{
     for (id obj in _internalObjects) {
         if ([obj isEqual:newObject]) {
@@ -116,23 +123,26 @@
     return true;
 }
 
+// 添加一个对象，会自动判断是否需要保存到 iCloud
 - (BOOL)addObject:(BDiCloudModel *)newObject{
+    [self cacheObject:newObject];
+    [self saveToDisk];
+
     if ([self useICloudSchema]) {
+        newObject.needSaveToICloud = @(YES);
         CKRecord * record = [newObject newICloudRecord:[self recordType]];
         @weakify(self);
         [self.cloudManager addRecord:record withCompletionBlock:^(CKRecord * record){
             @strongify(self);
-            [self cacheObject:newObject];
             [self insertNewICloudRecord:record];
+            newObject.needSaveToICloud = @(NO);
         }];
-    }else{
-        [self cacheObject:newObject];
-        [self saveToDisk];
     }
     
     return YES;
 }
 
+// 检查内存中是否存在目标对象
 - (BOOL)containsObject:(BDiCloudModel *)object{
     if ([_internalObjects containsObject:object]) {
         return YES;
@@ -141,17 +151,30 @@
     }
 }
 
+// 批量删除内存数据
+- (void)deleteInternalObjects:(NSArray *)objects{
+    for(BDiCloudModel * object in objects){
+        [self.internalObjects removeObject:object];
+    }                
+}
+
+// 批量删除 iCloud 数据缓存
+- (void)deleteICloudRecords:(NSArray *)recordIds{
+    for(CKRecordID * recordId in recordIds){
+        [self removeICloudRecord:recordId];
+    }             
+}
+
 // 删除训练方案入口
 - (BOOL)deleteObjects:(NSArray *)objects{
     NSMutableArray * deleteObjects = [NSMutableArray arrayWithCapacity:8];
     NSMutableArray * deleteRecordIds = [NSMutableArray arrayWithCapacity:8];
     for(BDiCloudModel * object in objects){
         if ([self.internalObjects containsObject:object]) {    
+            // 给内存对象打上需要删除标记，后续查询将不会返回已删除的数据
+            object.needDeleteFromICloud = @(YES);
             [deleteObjects addObject:object];
-
-            if(object.cloudRecord != nil){
-                [deleteRecordIds addObject:object.cloudRecord.recordID];
-            }
+            [deleteRecordIds addObject:object.cloudRecord.recordID];
         }
     }
 
@@ -163,14 +186,10 @@
             @strongify(self);
             if (! operationError) {
                 // 从内存中删除
-                for(BDiCloudModel * object in deleteObjects){
-                    [self.internalObjects removeObject:object];
-                }                
+                [self deleteInternalObjects:deleteObjects];
 
                 // 从 cloudRecords 中删除
-                for(CKRecordID * recordId in deletedRecordIds){
-                    [self removeICloudRecord:recordId];
-                }                
+                [self deleteICloudRecords:deleteRecordIds];
             }
 
             [self objectsDeleted:objects withError:operationError];
@@ -178,12 +197,8 @@
         [self.cloudManager.privateDatabase addOperation:modifyRecord];
     }else{
         // 从内存中删除
-        for(BDiCloudModel * object in deleteObjects){
-            [self.internalObjects removeObject:object];
-        }
-
+        [self deleteInternalObjects:deleteObjects];
         [self saveToDisk];
-
         [self objectsDeleted:deleteObjects withError:nil];
     }
     
@@ -194,6 +209,8 @@
     if (! [self containsObject:object]){
         return NO;
     }
+
+    object.needSaveToICloud = @(YES);
     
     if ([self useICloudSchema]) {
         // 将内存数据的修改同步到 iCloud 对象上
@@ -203,10 +220,17 @@
         modifyRecord.savePolicy = CKRecordSaveAllKeys;
         modifyRecord.qualityOfService = NSQualityOfServiceUserInitiated;
         modifyRecord.modifyRecordsCompletionBlock = ^(NSArray * savedRecords, NSArray * deletedRecordIDs, NSError * operationError){
+
+            if (! operationError){
+                // iCLoud 更新成功，更新内存标志
+                object.needSaveToICloud = @(NO);
+            }
+
             [self objectUpdated:object withError:operationError];
         };
         [self.cloudManager.privateDatabase addOperation:modifyRecord];
     }else{
+        // 直接同步到磁盘上
         [self saveToDisk];
         [self objectUpdated:object withError:nil];
     }
@@ -228,6 +252,8 @@
         userInfo:nil];   
 }
 
+// 从 iCloud 查询到的 CKRecord 中提取数据，转化成对应内存对象
+// TODO: 理应有动态创建的方法，直接知道子类的名字，直接初始化对象
 - (BDiCloudModel *)newCacheObjectWithICloudRecord:(CKRecord *)record{
     @throw [NSException exceptionWithName:NSGenericException 
         reason:@"派生类必须重载 BaseCache 中声明的 newCacheObjectWithICloudRecord 函数" 

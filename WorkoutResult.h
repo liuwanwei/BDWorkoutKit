@@ -45,11 +45,6 @@ extern NSInteger MaxWorkoutUnitCount;
 // 跳绳/锻炼总次数
 @property (nonatomic, strong) NSNumber * totalNumber;
 
-/**
- *  是否已经成功保存到了 iCloud 上
- */
-// @property (nonatomic, strong) NSNumber * savedToICloud;
-
 
 /**
  *  添加一个训练单元完成标志。未添加的训练单元，默认状态都是未完成。

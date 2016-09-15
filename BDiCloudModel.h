@@ -19,7 +19,10 @@
 @property (nonatomic, weak, nullable) CKRecord * cloudRecord;
 
 // 内存和本地缓存属性，不保存到 iCloud
-@property (nonnull, strong) NSNumber * savedToICloud;
+// YES 时代表属性有改变，需要保存到 iCloud
+@property (nonatomic, strong, nullable) NSNumber * needSaveToICloud;
+// YES 时代表数据需要从 iCloud 删除
+@property (nonatomic, strong, nullable) NSNumber * needDeleteFromICloud;
 
 // iCloud/CloudKit 的 CKRecord 对象之间互相转换
 - (nullable instancetype)initWithICloudRecord:(nonnull CKRecord *)record;
