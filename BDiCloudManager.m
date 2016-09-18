@@ -29,7 +29,7 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (sInstance == nil) {
-            sInstance = [[BDiCloudManager alloc] init];            
+            sInstance = [[BDiCloudManager alloc] init];
         }
     });
     
@@ -123,73 +123,29 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
 }
 
 // 查询数据最终实现代码
-- (void)finalQueryRecord:(NSString *)type{
+- (void)finalQueryRecord{
+    // 获取要查询的记录类型
+    NSString * type = (NSString *)[self.delegate performSelector:@selector(recordType)];
+    // 设备账号的 iCloud 服务可用，查询所有数据
+    NSPredicate * predict = [NSPredicate predicateWithValue:YES];
+    CKQuery * query = [[CKQuery alloc] initWithRecordType:type predicate:predict];
     
-    [_container accountStatusWithCompletionHandler:^(CKAccountStatus accountStatus, NSError * error){
-        if (accountStatus == CKAccountStatusAvailable) {
-            // 设备账号的 iCloud 服务可用，查询所有数据
-            NSPredicate * predict = [NSPredicate predicateWithValue:YES];
-            CKQuery * query = [[CKQuery alloc] initWithRecordType:type predicate:predict];
-            
-            [_privateDatabase performQuery:query  inZoneWithID:nil completionHandler:^(NSArray * results, NSError * error){
-                
-                if (error) {
-                    NSLog(@"查询 iCloud 数据出现问题: %@ / %@", NSStringFromSelector(_cmd), error);
-                }else{
-                    if (_recordsReceivedBlock) {
-                        _recordsReceivedBlock(results);
-                    }
-                }
-            }];
+    [_privateDatabase performQuery:query  inZoneWithID:nil completionHandler:^(NSArray * results, NSError * error){        
+        if (error) {
+            NSLog(@"查询 %@ 出现问题: %@", type, error);
+        }else{
+            NSLog(@"查询 %@ 数据成功", type);
+            if (_recordsReceivedBlock) {
+                _recordsReceivedBlock(results);
+            }
         }
     }];
 }
 
 - (void)queryRecordsWithCompletionBlock:(RecordsReceivedBLock)block{
     _recordsReceivedBlock = block;
-    
-    // 通过托管获取要查询的记录类型
-    NSString * type = (NSString *)[self.delegate performSelector:@selector(recordType)];
-    
-    [self finalQueryRecord:type];
+    [self finalQueryRecord];
 }
-
-/**
- *  从 iCloud CloudKit 服务查询所有训练结果
- */
-// - (void)queryRecordsWithType:(NSString *)recordType{
-//     [self finalQueryRecord:recordType];
-// }
-
-// /**
-//  *  从 iCloud CloudKit 服务查询所有训练结果
-//  */
-// - (void)recordsWithType:(NSString *)recordType from:(id)caller action:(SEL)sel{
-//     @weakify(self);
-    
-//     [_container accountStatusWithCompletionHandler:^(CKAccountStatus accountStatus, NSError * error){
-//         @strongify(self);
-//         if (accountStatus == CKAccountStatusAvailable) {
-//             // 设备账号的 iCloud 服务可用，查询所有数据
-//             NSPredicate * predict = [NSPredicate predicateWithValue:YES];
-//             CKQuery * query = [[CKQuery alloc] initWithRecordType:recordType predicate:predict];
-            
-//             [_privateDatabase performQuery:query  inZoneWithID:nil completionHandler:^(NSArray * results, NSError * error){
-                
-//                 if (error) {
-//                     NSLog(@"查询 iCloud 数据出现问题: %@ / %@", NSStringFromSelector(_cmd), error);
-//                 }else{
-// #pragma clang diagnostic push
-// #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-//                     [caller performSelector:sel withObject:results];
-// #pragma clang diagnostic pop
-//                 }
-//             }];
-//         }else{
-//             [self iCloudNotEnabledHandler];
-//         }
-//     }];
-// }
 
 - (void)finalAddRecord:(CKRecord *)record{
     @weakify(self);

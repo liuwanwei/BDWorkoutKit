@@ -39,8 +39,7 @@
     }
 }
 
-- (void)queryFromICloud{
-    NSLog(@"查询 %@ 记录", [self recordType]);
+- (void)queryFromICloud{    
     @weakify(self);
     [self.cloudManager queryRecordsWithCompletionBlock:^(NSArray * records){
         @strongify(self);
@@ -51,10 +50,17 @@
         // 缓存 iCloud 中查询到的所有记录
         self.cloudRecords = records;
         
+        BOOL dirty = NO;
         // 将 iCloud 记录转换成 WorkoutPlan 实例对象
         for (CKRecord * record in records) {
             BDiCloudModel * model = [self newCacheObjectWithICloudRecord:record];
-            [self cacheObject:model];
+            if([self cacheObject:model]){
+                dirty = YES;
+            }
+        }
+        
+        if (dirty) {
+            [self saveToDisk];
         }
     }];
 }

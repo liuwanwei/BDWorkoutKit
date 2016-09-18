@@ -11,6 +11,7 @@
 
 NSInteger MaxWorkoutUnitCount = 128;
 
+static NSString * const WorkoutTitle = @"workoutTitle";
 static NSString * const WorkoutTime = @"workoutTime";
 static NSString * const ConsumedTime = @"consumedTime";
 static NSString * const PausedTimes = @"pausedTimes";
@@ -33,6 +34,7 @@ static NSString * const TotalNumber = @"totalNumber";
 - (instancetype)initWithICloudRecord:(CKRecord *)record{
     if (self = [super initWithICloudRecord:record]) {
         // 从 CKRecord 生成数据
+        _workoutTitle = [record objectForKey:WorkoutTitle];
         _workoutTime = [record objectForKey:WorkoutTime];
         _consumedTime = [record objectForKey:ConsumedTime];
         _pausedTimes = [record objectForKey:PausedTimes];
@@ -46,6 +48,7 @@ static NSString * const TotalNumber = @"totalNumber";
 }
 
 - (void)updateICloudRecord:(CKRecord *)record{
+    [record setObject:self.workoutTitle forKey:WorkoutTitle];
     [record setObject:self.workoutTime forKey:WorkoutTime];
     [record setObject:self.consumedTime forKey:ConsumedTime];
     [record setObject:self.pausedTimes forKey:PausedTimes];

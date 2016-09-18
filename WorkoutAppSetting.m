@@ -67,8 +67,6 @@ static NSString * const AppSettingKey = @"AppSettingKey";
 // 监视所有属性的修改行为
 - (void)addValueChangeObserver{
     NSDictionary * properties = [self codableProperties];
-    NSLog(@"properties : %@", properties);
-
     for(NSString * key in properties){
         [self addObserver:self forKeyPath:key options:NSKeyValueObservingOptionNew context:NULL];
     }
