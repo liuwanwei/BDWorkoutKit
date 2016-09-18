@@ -67,4 +67,7 @@
 // 保存数据到磁盘
 - (void)saveToDisk;
 
+// 在界面主线程中展示提示信息
+- (void)showAlertWithMessage:(NSString *)message;
+
 @end

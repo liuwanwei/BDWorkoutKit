@@ -72,9 +72,24 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 
 - (void)objectsDeleted:(NSArray *)objects withError:(NSError *)error{
     if (!error){
-        // TODO: 提示删除成功
+        // 找出删除的训练单元对应的训练方案，更新他们的动态数据
+        NSMutableArray * affectedPlans = [NSMutableArray arrayWithCapacity:8];
+        for (WorkoutUnit * unit in objects){
+            WorkoutPlan * plan = [unit workoutPlan];
+            if (![affectedPlans containsObject:plan]){
+                [affectedPlans addObject:plan];
+            }
+        }
+
+        for (WorkoutPlan * plan in affectedPlans){
+            [plan updateDynamicProperties];
+        }
+
+        // 提示删除成功
+        NSLog(@"训练单元删除成功：%@ 个", @(objects.count));
     }else{
-        // TODO: 提示删除失败
+        // 提示删除失败
+        [self showAlertWithMessage:[NSString stringWithFormat:@"删除训练单元失败: %@", error]];
     }
 }
 

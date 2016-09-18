@@ -21,10 +21,6 @@ typedef void (^RecordSavedBlock)(CKRecord * record);
 @required
 - (NSString *)recordType;
 
-@optional
-- (void)successfullySavedRecord:(CKRecord *)record;
-- (void)didReceiveWorkoutResults:(NSArray *)results;
-
 @end
 
 @interface BDiCloudManager : NSObject
@@ -45,7 +41,7 @@ typedef void (^RecordSavedBlock)(CKRecord * record);
 // 返回设备的 iCloud 可用状态
 - (BOOL)iCloudAvailable;
 
-- (void)queryRecordsWithType:(NSString *)recordType;
+//- (void)queryRecordsWithType:(NSString *)recordType;
 // 用 delete 方式的添加记录
 - (void)addRecord:(CKRecord *)record;
 // 用 block 方式添加记录

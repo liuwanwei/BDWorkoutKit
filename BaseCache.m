@@ -32,17 +32,22 @@
 }
 
 - (void)load{
+    [self loadFromDisk];
+
     if ([self useICloudSchema]) {
         [self queryFromICloud];
-    }else{
-        [self loadFromDisk];
     }
 }
 
 - (void)queryFromICloud{
+    NSLog(@"查询 %@ 记录", [self recordType]);
     @weakify(self);
     [self.cloudManager queryRecordsWithCompletionBlock:^(NSArray * records){
         @strongify(self);
+
+        NSInteger count = [records count];
+        NSLog(@"查询到 %@ 条 %@ 记录", @(count), [self recordType]);
+
         // 缓存 iCloud 中查询到的所有记录
         self.cloudRecords = records;
         
@@ -115,12 +120,13 @@
 - (BOOL)cacheObject:(BDiCloudModel *)newObject{
     for (id obj in _internalObjects) {
         if ([obj isEqual:newObject]) {
+            NSLog(@"添加失败：重复的 %@ 记录 [%@]", [self recordType], newObject.objectId);
             return NO;
         }
     }
     
     [self.internalObjects addObject:newObject];
-    return true;
+    return YES;
 }
 
 // 添加一个对象，会自动判断是否需要保存到 iCloud
@@ -170,11 +176,14 @@
     NSMutableArray * deleteObjects = [NSMutableArray arrayWithCapacity:8];
     NSMutableArray * deleteRecordIds = [NSMutableArray arrayWithCapacity:8];
     for(BDiCloudModel * object in objects){
-        if ([self.internalObjects containsObject:object]) {    
-            // 给内存对象打上需要删除标记，后续查询将不会返回已删除的数据
-            object.needDeleteFromICloud = @(YES);
-            [deleteObjects addObject:object];
-            [deleteRecordIds addObject:object.cloudRecord.recordID];
+        if ([self.internalObjects containsObject:object]) {                
+            if ([self useICloudSchema]){
+                // 给内存对象打上需要删除标记，后续查询将不会返回已删除的数据
+                object.needDeleteFromICloud = @(YES);
+                [deleteRecordIds addObject:object.cloudRecord.recordID];
+            }else{
+                [deleteObjects addObject:object];
+            }            
         }
     }
 
@@ -236,6 +245,20 @@
     }
     
     return YES;
+}
+
+- (void)showAlertWithMessage:(NSString *)message{
+    UIAlertController * alert = [UIAlertController alertControllerWithTitle:@"错误"
+                                                                    message:message
+                                                             preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction * action;
+    action = [UIAlertAction actionWithTitle:@"确定"
+                                      style:UIAlertActionStyleDefault
+                                    handler:^(UIAlertAction * action){
+                                    }];
+    [alert addAction:action];
+
+    // TODO: 看怎么在主 UI 线程显示出来    
 }
 
 // 派生类必须重载的接口
