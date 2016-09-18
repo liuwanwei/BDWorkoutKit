@@ -12,6 +12,7 @@
 #import "WorkoutAppSetting.h"
 #import "BDiCloudManager.h"
 #import "BDFoundation.h"
+#import "DataCache.h"
 #import <MJExtension.h>
 #import <CloudKit/CloudKit.h>
 #import <TMCache.h>
@@ -47,6 +48,15 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     }
 }
 
+/**
+ *
+ * 加载训练方案是从磁盘加载的最后一类数据，排在从磁盘加载训练单元后面（必须保证）；
+ * 最后加载完成后，要做下面事情：
+ * 1.根据训练单元数据，计算每个训练方案的训练时间、休息时间；
+ * 2.更新当前训练方案和训练单元到 DataCache 中；
+ *
+ */
+
 - (void)loadFromDisk{
     [super loadFromDisk];
 
@@ -55,6 +65,9 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     for(WorkoutPlan * plan in plans){
         [plan updateDynamicProperties];
     }
+
+    // 更新当前训练方案到内存中
+    [[DataCache sharedInstance] resetWorkoutPlan];
 }
 
 - (WorkoutPlan *)newWorkoutPlan:(WorkoutPlanType)type{

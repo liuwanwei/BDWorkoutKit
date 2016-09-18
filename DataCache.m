@@ -28,46 +28,59 @@
     dispatch_once(&onceToken, ^{
         if (sSharedInstance == nil) {
             sSharedInstance = [[DataCache alloc] init];
-            
-            // 初始化当前训练方案
-            [sSharedInstance resetWorkoutPlan];
-            
-            // 初始化当前训练单元
-            [sSharedInstance resetWorkoutUnits];
-            
         }
     });
     
     return sSharedInstance;
 }
 
+// 发送消息，通知界面更新
+- (void)postNotification{    
+    [[NSNotificationCenter defaultCenter] postNotificationName:kUPDATE_WORKOUT_MODE_MESSAGE object:nil];
+}
+
 - (void)resetWorkoutPlan {
-    NSNumber * selectedWorkoutPlan = [WorkoutAppSetting sharedInstance].workoutPlanId;
+    NSNumber * workoutPlanId = [WorkoutAppSetting sharedInstance].workoutPlanId;
+    
+    // 在内置训练方案中查询    
     for (WorkoutPlan * plan in [WorkoutPlanCache builtInWorkoutPlans]) {
-        if ([plan.objectId isEqualToNumber: selectedWorkoutPlan]) {
+        if ([plan.objectId isEqualToNumber: workoutPlanId]) {
             _currentWorkoutPlan = plan;
+            NSDictionary * rootDict = [Utils loadJsonFileFromBundel:_currentWorkoutPlan.configFile];
+            if (rootDict) {
+                NSArray * dicts = rootDict[@"workouts"];
+                _workoutUnits = [WorkoutUnit objectArrayWithKeyValuesArray:dicts];
+            }
+            [self postNotification];
             return;
         }
     }
     
+    // 在自定义训练方案中查询
     for (WorkoutPlan * plan in [[WorkoutPlanCache sharedInstance] cachedObjects]) {
-        if ([plan.objectId isEqualToNumber: selectedWorkoutPlan]) {
+        if ([plan.objectId isEqualToNumber: workoutPlanId]) {
             _currentWorkoutPlan = plan;
+            _workoutUnits = [[WorkoutUnitCache sharedInstance] unitsForPlan:_currentWorkoutPlan];
+            [self postNotification];
             return;
         }
     }
+
+    @throw [NSException exceptionWithName:NSGenericException 
+        reason:[NSString stringWithFormat:@"没有找到对应的训练方案：%@", workoutPlanId]
+        userInfo:nil];
 }
 
-- (void)resetWorkoutUnits {
-    if ([_currentWorkoutPlan isBuiltInPlan]) {
-        NSDictionary * rootDict = [Utils loadJsonFileFromBundel:_currentWorkoutPlan.configFile];
-        if (rootDict) {
-            NSArray * dicts = rootDict[@"workouts"];
-            _workoutUnits = [WorkoutUnit objectArrayWithKeyValuesArray:dicts];
-        }
-    }else{
-        _workoutUnits = [[WorkoutUnitCache sharedInstance] unitsForPlan:_currentWorkoutPlan];
-    }
-}
+// - (void)resetWorkoutUnits {
+//     if ([_currentWorkoutPlan isBuiltInPlan]) {
+//         NSDictionary * rootDict = [Utils loadJsonFileFromBundel:_currentWorkoutPlan.configFile];
+//         if (rootDict) {
+//             NSArray * dicts = rootDict[@"workouts"];
+//             _workoutUnits = [WorkoutUnit objectArrayWithKeyValuesArray:dicts];
+//         }
+//     }else{
+//         _workoutUnits = [[WorkoutUnitCache sharedInstance] unitsForPlan:_currentWorkoutPlan];
+//     }
+// }
 
 @end

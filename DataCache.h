@@ -24,6 +24,5 @@
 
 // 根据用户选择，重置当前训练方案和训练计划指针
 - (void)resetWorkoutPlan;
-- (void)resetWorkoutUnits;
 
 @end

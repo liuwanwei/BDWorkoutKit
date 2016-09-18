@@ -79,11 +79,7 @@ static NSString * const AppSettingKey = @"AppSettingKey";
 
     // 修改当前训练方案时，自动更新动态数据
     if ([keyPath isEqualToString:@"workoutPlanId"]){
-        [[DataCache sharedInstance] resetWorkoutPlan];
-        [[DataCache sharedInstance] resetWorkoutUnits];
-
-        // 发送消息，通知界面更新
-        [[NSNotificationCenter defaultCenter] postNotificationName:kUPDATE_WORKOUT_MODE_MESSAGE object:nil];
+        [[DataCache sharedInstance] resetWorkoutPlan];        
     }
 }
 
