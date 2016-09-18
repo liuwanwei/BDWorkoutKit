@@ -124,9 +124,14 @@
 
 // 将新建的对象添加到内存中
 - (BOOL)cacheObject:(BDiCloudModel *)newObject{
-    for (id obj in _internalObjects) {
+    for (BDiCloudModel * obj in _internalObjects) {
         if ([obj isEqual:newObject]) {
+            obj.cloudRecord = newObject.cloudRecord;
             NSLog(@"添加失败：重复的 %@ 记录 [%@]", [self recordType], newObject.objectId);
+            if (newObject.cloudRecord != nil)
+            {
+                NSLog(@"更新记录的 iCloud CKRecord 对象指针");
+            }
             return NO;
         }
     }
@@ -191,7 +196,7 @@
                 [deleteObjects addObject:object];
             }            
         }
-    }
+    }    
 
     if ([self useICloudSchema]) {
         @weakify(self);
@@ -201,8 +206,8 @@
             @strongify(self);
             if (! operationError) {
                 // 从内存中删除
-                [self deleteInternalObjects:deleteObjects];
-
+                [self deleteInternalObjects:deleteObjects];                
+                [self saveToDisk];
                 // 从 cloudRecords 中删除
                 [self deleteICloudRecords:deleteRecordIds];
             }
@@ -210,7 +215,7 @@
             [self objectsDeleted:objects withError:operationError];
         };
         [self.cloudManager.privateDatabase addOperation:modifyRecord];
-    }else{
+    }else{    
         // 从内存中删除
         [self deleteInternalObjects:deleteObjects];
         [self saveToDisk];
