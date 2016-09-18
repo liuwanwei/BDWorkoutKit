@@ -127,10 +127,16 @@
     for (BDiCloudModel * obj in _internalObjects) {
         if ([obj isEqual:newObject]) {
             obj.cloudRecord = newObject.cloudRecord;
-            NSLog(@"添加失败：重复的 %@ 记录 [%@]", [self recordType], newObject.objectId);
-            if (newObject.cloudRecord != nil){
-                NSLog(@"更新记录的 iCloud CKRecord 对象指针");
+            NSString * log = [NSString stringWithFormat:@"添加 %@ 失败，存在 objectId 相同记录", [self recordType]];
+            
+            if (newObject.objectId != nil) {
+                log = [log stringByAppendingString:[newObject.objectId stringValue]];
             }
+            
+            if (newObject.cloudRecord != nil){
+                log = [log stringByAppendingString:@"，更新 CKRecord 指针"];
+            }
+            NSLog(@"%@", log);
             return NO;
         }
     }
@@ -147,8 +153,12 @@
         @weakify(self);
         [self.cloudManager addRecord:record withCompletionBlock:^(CKRecord * record){
             @strongify(self);
+            // 添加到内部存储
             [self insertNewICloudRecord:record];
             newObject.needSaveToICloud = @(NO);
+
+            // cloudRecord 是 weak 类型，必须添加到内部数组后才能赋给别人
+            newObject.cloudRecord = record;
         }];
     }
 
@@ -190,7 +200,13 @@
             if ([self useICloudSchema]){
                 // 给内存对象打上需要删除标记，后续查询将不会返回已删除的数据
                 object.needDeleteFromICloud = @(YES);
-                [deleteRecordIds addObject:object.cloudRecord.recordID];
+
+                if (object.cloudRecord != nil){
+                    [deleteRecordIds addObject:object.cloudRecord.recordID];
+                }else{
+                    NSLog(@"严重错误：要删除的对象没有 CKRecordID 属性");
+                    return NO;
+                }
             }
             
             [deleteObjects addObject:object];         
