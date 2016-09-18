@@ -51,6 +51,16 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     return unit;
 }
 
+- (BOOL)addObject:(BDiCloudModel *)newObject{
+    BOOL ret = [super addObject:newObject];
+    if (ret){
+        WorkoutUnit * unit = (WorkoutUnit *)newObject;
+        [[unit workoutPlan] updateDynamicProperties];
+    }
+
+    return ret;
+}
+
 // 查询训练方案下属的所有训练单元
 - (NSArray *)unitsForPlan:(WorkoutPlan *)plan{
     NSMutableArray * units = [[NSMutableArray alloc] init];
