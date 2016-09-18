@@ -128,8 +128,7 @@
         if ([obj isEqual:newObject]) {
             obj.cloudRecord = newObject.cloudRecord;
             NSLog(@"添加失败：重复的 %@ 记录 [%@]", [self recordType], newObject.objectId);
-            if (newObject.cloudRecord != nil)
-            {
+            if (newObject.cloudRecord != nil){
                 NSLog(@"更新记录的 iCloud CKRecord 对象指针");
             }
             return NO;
@@ -141,10 +140,7 @@
 }
 
 // 添加一个对象，会自动判断是否需要保存到 iCloud
-- (BOOL)addObject:(BDiCloudModel *)newObject{
-    [self cacheObject:newObject];
-    [self saveToDisk];
-
+- (BOOL)addObject:(BDiCloudModel *)newObject{    
     if ([self useICloudSchema]) {
         newObject.needSaveToICloud = @(YES);
         CKRecord * record = [newObject newICloudRecord:[self recordType]];
@@ -155,6 +151,9 @@
             newObject.needSaveToICloud = @(NO);
         }];
     }
+
+    [self cacheObject:newObject];
+    [self saveToDisk];
     
     return YES;
 }
@@ -192,9 +191,9 @@
                 // 给内存对象打上需要删除标记，后续查询将不会返回已删除的数据
                 object.needDeleteFromICloud = @(YES);
                 [deleteRecordIds addObject:object.cloudRecord.recordID];
-            }else{
-                [deleteObjects addObject:object];
-            }            
+            }
+            
+            [deleteObjects addObject:object];         
         }
     }    
 

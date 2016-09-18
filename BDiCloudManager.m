@@ -159,7 +159,7 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
                 if (error) {
                     NSLog(@"iCloud/CKRecord 添加失败：An error occured in %@: %@", NSStringFromSelector(_cmd), error);
                 }else{
-                    NSLog(@"添加训练结果（iCloud/CKRecord）数据成功");                    
+                    NSLog(@"添加数据（iCloud/CKRecord）数据成功");                    
                     if (_recordSavedBlock) {
                         _recordSavedBlock(record);
                     }

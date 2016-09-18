@@ -26,10 +26,4 @@
 - (void)resetWorkoutPlan;
 - (void)resetWorkoutUnits;
 
-// 测试代码：制造训练结果
-//- (void)makeTestWorkoutResults;
-//- (void)makeAndSaveWorkoutResultToCloud;
-
-
-
 @end

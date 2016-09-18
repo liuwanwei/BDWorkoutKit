@@ -76,9 +76,19 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 
 - (void)objectsDeleted:(NSArray *)objects withError:(NSError *)operationError{
     if (!operationError){
-        // 删除训练方案下属训练单元
+
+        NSNumber * currentPlanId = [[WorkoutAppSetting sharedInstance] workoutPlanId];
         for(BDiCloudModel * object in objects){
-            [self deleteUnitsForPlan:(WorkoutPlan *)object];
+            WorkoutPlan * plan = (WorkoutPlan *)object;
+            // 删除训练方案下属训练单元
+            [self deleteUnitsForPlan:plan];
+
+            if ([plan.objectId isEqualToNumber:currentPlanId]){
+                // 删除的是当前训练方案时，修改当前训练方案为第一个内置方案
+                NSArray * builtInPlans = [WorkoutPlanCache builtInWorkoutPlans];
+                WorkoutPlan * first = builtInPlans[0];
+                [WorkoutAppSetting sharedInstance].workoutPlanId = first.objectId;
+            }
         }
         
         NSLog(@"删除 iCloud 记录成功");        
