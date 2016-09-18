@@ -86,9 +86,11 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
         NSMutableArray * affectedPlans = [NSMutableArray arrayWithCapacity:8];
         for (WorkoutUnit * unit in objects){
             WorkoutPlan * plan = [unit workoutPlan];
-            if (![affectedPlans containsObject:plan]){
-                [affectedPlans addObject:plan];
-            }
+            if (plan != nil){
+                if (![affectedPlans containsObject:plan]){
+                    [affectedPlans addObject:plan];
+                }
+            }            
         }
 
         for (WorkoutPlan * plan in affectedPlans){
