@@ -24,10 +24,18 @@
 
 @interface WorkoutPlanCache : BaseCache
 
+// 当前训练方案的训练单元数组(WorkoutUnit)
+@property (nonatomic, strong, readonly) NSArray * workoutUnits;
+// 当前训练方案对象（WorkoutPlan)
+@property (nonatomic, strong, readonly) WorkoutPlan * currentWorkoutPlan;
+
+
 + (instancetype)sharedInstance;
 
 // 查询内置的训练方案
 + (NSArray *)builtInWorkoutPlans;
+
+- (void)resetCurrentWorkoutPlan:(NSNumber *)workoutPlanId;
 
 // 查询 objectId 对应的训练方案对象
 - (WorkoutPlan *)workoutPlanWithId:(NSNumber *)objectId;

@@ -12,7 +12,7 @@
 #import "WorkoutAppSetting.h"
 #import "BDiCloudManager.h"
 #import "BDFoundation.h"
-#import "DataCache.h"
+#import "WorkoutUnit.h"
 #import <MJExtension.h>
 #import <CloudKit/CloudKit.h>
 #import <TMCache.h>
@@ -48,12 +48,51 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     }
 }
 
+// 发送消息，通知界面更新
+- (void)postNotification{    
+    [[NSNotificationCenter defaultCenter] postNotificationName:kUPDATE_WORKOUT_MODE_MESSAGE object:nil];
+}
+
+- (void)resetCurrentWorkoutPlan:(NSNumber *)workoutPlanId {
+    if(nil == workoutPlanId){
+        workoutPlanId = [[WorkoutAppSetting sharedInstance] workoutPlanId];
+    }
+
+    // 在内置训练方案中查询    
+    for (WorkoutPlan * plan in [WorkoutPlanCache builtInWorkoutPlans]) {
+        if ([plan.objectId isEqualToNumber: workoutPlanId]) {
+            _currentWorkoutPlan = plan;
+            NSDictionary * rootDict = [Utils loadJsonFileFromBundel:_currentWorkoutPlan.configFile];
+            if (rootDict) {
+                NSArray * dicts = rootDict[@"workouts"];
+                _workoutUnits = [WorkoutUnit objectArrayWithKeyValuesArray:dicts];
+            }
+            [self postNotification];
+            return;
+        }
+    }
+    
+    // 在自定义训练方案中查询
+    for (WorkoutPlan * plan in [self cachedObjects]) {
+        if ([plan.objectId isEqualToNumber: workoutPlanId]) {
+            _currentWorkoutPlan = plan;
+            _workoutUnits = [[WorkoutUnitCache sharedInstance] unitsForPlan:_currentWorkoutPlan];
+            [self postNotification];
+            return;
+        }
+    }
+
+    @throw [NSException exceptionWithName:NSGenericException 
+        reason:[NSString stringWithFormat:@"没有找到对应的训练方案：%@", workoutPlanId]
+        userInfo:nil];
+}
+
 /**
  *
  * 加载训练方案是从磁盘加载的最后一类数据，排在从磁盘加载训练单元后面（必须保证）；
  * 最后加载完成后，要做下面事情：
  * 1.根据训练单元数据，计算每个训练方案的训练时间、休息时间；
- * 2.更新当前训练方案和训练单元到 DataCache 中；
+ * 2.更新当前训练方案和训练单元；
  *
  */
 
@@ -67,7 +106,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
     }
 
     // 更新当前训练方案到内存中
-    [[DataCache sharedInstance] resetWorkoutPlan];
+    [self resetCurrentWorkoutPlan:nil];
 }
 
 - (WorkoutPlan *)newWorkoutPlan:(WorkoutPlanType)type{

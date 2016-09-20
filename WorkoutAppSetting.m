@@ -11,7 +11,7 @@
 
 #import "WorkoutAppSetting.h"
 #import "WorkoutNotificationManager.h"
-#import "DataCache.h"
+#import "WorkoutPlanCache.h"
 #import <TMCache.h>
 #import <AutoCoding.h>
 
@@ -79,7 +79,7 @@ static NSString * const AppSettingKey = @"AppSettingKey";
 
     // 修改当前训练方案时，自动更新动态数据
     if ([keyPath isEqualToString:@"workoutPlanId"]){
-        [[DataCache sharedInstance] resetWorkoutPlan];        
+        [[WorkoutPlanCache sharedInstance] resetCurrentWorkoutPlan: _workoutPlanId];
     }
 }
 
