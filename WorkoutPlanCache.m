@@ -23,6 +23,9 @@ static NSString * const RecordTypeWorkoutPlan = @"WorkoutPlan";
 // TMCache 使用的存储键值
 static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 
+// 内置训练方案 Id 最大值
+static NSInteger MAX_BUILTIN_PLAN_ID = 10;
+
 @implementation WorkoutPlanCache
 
 + (instancetype)sharedInstance{
@@ -58,29 +61,33 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
         workoutPlanId = [[WorkoutAppSetting sharedInstance] workoutPlanId];
     }
 
-    // 在内置训练方案中查询    
-    for (WorkoutPlan * plan in [WorkoutPlanCache builtInWorkoutPlans]) {
-        if ([plan.objectId isEqualToNumber: workoutPlanId]) {
-            _currentWorkoutPlan = plan;
-            NSDictionary * rootDict = [Utils loadJsonFileFromBundel:_currentWorkoutPlan.configFile];
-            if (rootDict) {
-                NSArray * dicts = rootDict[@"workouts"];
-                _workoutUnits = [WorkoutUnit objectArrayWithKeyValuesArray:dicts];
+    NSInteger integerId = [workoutPlanId integerValue];
+
+    if (integerId <= MAX_BUILTIN_PLAN_ID){
+        // 在内置训练方案中查询    
+        for (WorkoutPlan * plan in [WorkoutPlanCache builtInWorkoutPlans]) {
+            if ([plan.objectId isEqualToNumber: workoutPlanId]) {
+                _currentWorkoutPlan = plan;
+                NSDictionary * rootDict = [Utils loadJsonFileFromBundel:_currentWorkoutPlan.configFile];
+                if (rootDict) {
+                    NSArray * dicts = rootDict[@"workouts"];
+                    _workoutUnits = [WorkoutUnit objectArrayWithKeyValuesArray:dicts];
+                }
+                [self postNotification];
+                return;
             }
-            [self postNotification];
-            return;
         }
-    }
-    
-    // 在自定义训练方案中查询
-    for (WorkoutPlan * plan in [self cachedObjects]) {
-        if ([plan.objectId isEqualToNumber: workoutPlanId]) {
-            _currentWorkoutPlan = plan;
-            _workoutUnits = [[WorkoutUnitCache sharedInstance] unitsForPlan:_currentWorkoutPlan];
-            [self postNotification];
-            return;
+    }else{
+        // 在自定义训练方案中查询
+        for (WorkoutPlan * plan in [self cachedObjects]) {
+            if ([plan.objectId isEqualToNumber: workoutPlanId]) {
+                _currentWorkoutPlan = plan;
+                _workoutUnits = [[WorkoutUnitCache sharedInstance] unitsForPlan:_currentWorkoutPlan];
+                [self postNotification];
+                return;
+            }
         }
-    }
+    }    
 
     @throw [NSException exceptionWithName:NSGenericException 
         reason:[NSString stringWithFormat:@"没有找到对应的训练方案：%@", workoutPlanId]
@@ -110,7 +117,7 @@ static NSString * const WorkoutPlansKey = @"WorkoutPlansKey";
 }
 
 - (WorkoutPlan *)newWorkoutPlan:(WorkoutPlanType)type{
-    NSInteger maxId = 10; // 自定义训练方案 Id 从 10 开始
+    NSInteger maxId = MAX_BUILTIN_PLAN_ID; // 自定义训练方案 Id 从 10 开始
     NSArray * plans = [self cachedObjects];
     for (WorkoutPlan * plan in plans) {
         if ([plan.objectId integerValue] > maxId) {

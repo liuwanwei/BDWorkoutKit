@@ -7,6 +7,7 @@
 //
 
 #import "WorkoutUnitCache.h"
+#import "WorkoutPlanCache.h"
 #import "WorkoutUnit.h"
 #import "WorkoutAppSetting.h"
 #import "BDiCloudManager.h"
@@ -55,10 +56,18 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
     BOOL ret = [super addObject:newObject];
     if (ret){
         WorkoutUnit * unit = (WorkoutUnit *)newObject;
-        [[unit workoutPlan] updateDynamicProperties];
+        [self updateWorkoutPlan:[unit workoutPlan]];   
     }
 
     return ret;
+}
+
+- (void)updateWorkoutPlan:(WorkoutPlan *)plan{
+    [plan updateDynamicProperties];
+
+    if ([plan isEqual:[[WorkoutPlanCache sharedInstance] currentWorkoutPlan]]){
+        [[WorkoutPlanCache sharedInstance] resetCurrentWorkoutPlan:plan.objectId];
+    }
 }
 
 // 查询训练方案下属的所有训练单元
@@ -94,7 +103,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
         }
 
         for (WorkoutPlan * plan in affectedPlans){
-            [plan updateDynamicProperties];
+            [self updateWorkoutPlan:plan];
         }
 
         // 提示删除成功
@@ -108,7 +117,7 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 - (void)objectUpdated:(BDiCloudModel *)object withError:(NSError *)error{
     if (!error){
         WorkoutUnit * unit = (WorkoutUnit *)object;
-        [[unit workoutPlan] updateDynamicProperties];
+        [self updateWorkoutPlan:[unit workoutPlan]];
     }else{
         // TODO: 提示修改失败
     }
