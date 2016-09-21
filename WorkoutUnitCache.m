@@ -72,14 +72,21 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 
 // 查询训练方案下属的所有训练单元
 - (NSArray *)unitsForPlan:(WorkoutPlan *)plan{
+    NSArray * allUnits = [self cachedObjects];
     NSMutableArray * units = [[NSMutableArray alloc] init];
-    for (WorkoutUnit * unit in self.internalObjects) {
+    for (WorkoutUnit * unit in allUnits) {
         if ([unit.workoutPlanId isEqualToNumber:plan.objectId]) {
             [units addObject:unit];
         }
     }
-    
-    return [units copy];
+
+    // 按照 Id 从大到小排序
+    return [units sortedArrayUsingComparator: ^(id obj1, id obj2){
+        NSNumber * id1 = ((BDiCloudModel *)obj1).objectId;
+        NSNumber * id2 = ((BDiCloudModel *)obj2).objectId;
+
+        return [id1 compare: id2];
+    }];
 }
 
 // 测试用，显示在菜单上，看缓存中总数变化是否正确
