@@ -243,15 +243,16 @@
 - (BOOL)updateObject:(BDiCloudModel *)object{
     if (! [self containsObject:object]){
         return NO;
-    }
-
-    object.needSaveToICloud = @(YES);
+    }    
     
     if ([self useICloudSchema]) {
+        object.needSaveToICloud = @(YES);
+        [self saveToDisk];        
+
         // 将内存数据的修改同步到 iCloud 对象上
         [object updateICloudRecord:object.cloudRecord];
-        NSArray * recordsId = @[object.cloudRecord];
-        CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:recordsId recordIDsToDelete:nil];
+        NSArray * records = @[object.cloudRecord];
+        CKModifyRecordsOperation * modifyRecord = [[CKModifyRecordsOperation alloc] initWithRecordsToSave:records recordIDsToDelete:nil];
         modifyRecord.savePolicy = CKRecordSaveAllKeys;
         modifyRecord.qualityOfService = NSQualityOfServiceUserInitiated;
         modifyRecord.modifyRecordsCompletionBlock = ^(NSArray * savedRecords, NSArray * deletedRecordIDs, NSError * operationError){
@@ -259,9 +260,10 @@
             if (! operationError){
                 // iCLoud 更新成功，更新内存标志
                 object.needSaveToICloud = @(NO);
+                [self saveToDisk];
             }
 
-            [self objectUpdated:object withError:operationError];
+            [self objectUpdated:object withError:operationError];            
         };
         [self.cloudManager.privateDatabase addOperation:modifyRecord];
     }else{
