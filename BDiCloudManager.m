@@ -40,13 +40,32 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
     if (self = [super init]) {
         _container = [CKContainer defaultContainer];
         _privateDatabase = [_container privateCloudDatabase];
+        // [self registerIdentityChangeCustomNotification];
     }
     
     return self;
 }
 
-// 注册 iCloud 可用状态改变事件处理
+// TODO: 在有确定证据证明之前，暂不使用这个来自于猜测的代码
+// 注册应用内部的 iCloud 可用状态改变事件
+// - (void)registerIdentityChangeCustomNotification{
+//     [[NSNotificationCenter defaultCenter]
+//         addObserver: self
+//         selector: @selector(customICloudAccountChanged:)
+//         name: CustomICloudAccountChanged
+//         object: nil
+//     ];
+// }
+
+// 重新获取容器和私有数据库指针，并无确切文档，全靠推测，如果发现
+// - (void)customICloudAccountChanged:(NSNotification *)notification{
+//     _container = [CKContainer defaultCenter];
+//     _privateDatabase = [_container privateCloudDatabase];
+// }
+
+// 注册系统级的 iCloud 可用状态改变事件处理
 - (void)registerIdentityChangeNotification{
+    // 只让 sharedInstance 实例侦听这个消息
     if (self != [BDiCloudManager sharedInstance]){
         @throw [NSException exceptionWithName:NSGenericException reason:@"只能有一个实例侦听这个消息" userInfo:nil];
     }
@@ -59,9 +78,11 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
     ];
 }
 
+// iCloud 身份信息改变消息处理
 - (void)iCloudAccountAvailablityChanged:(NSNotification *)notification{
     WorkoutAppSetting * setting = [WorkoutAppSetting sharedInstance];
     if (! [setting useICloudSchema]){
+        // 如果用户没有选择使用 iCloud，就不做处理
         return;
     }
 
