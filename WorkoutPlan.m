@@ -89,7 +89,7 @@ static NSString * const HeaderImage = @"headerImage";
         case PlanTypeHIIT:
             return @"HIIT";
         case PlanTypeEquipment:
-            return @"器械训练";
+            return @"分组训练";
         case PlanTypeJumpRope:
             return @"跳绳训练";
         case PlanTypeBuiltIn:
@@ -99,7 +99,7 @@ static NSString * const HeaderImage = @"headerImage";
 
 - (NSString *)longDescription{
     NSString * desc = [NSString stringWithFormat:@"训练类型: %@", [self typeDescription]];
-    desc = [desc stringByAppendingFormat:@"\n训练时间: %ld 秒", _workoutTimeLength];
+    desc = [desc stringByAppendingFormat:@"\n训练时间: %ld 秒", (long)_workoutTimeLength];
     desc = [desc stringByAppendingFormat:@"\n休息时间: %ld 秒", _restTimeLength];
     desc = [desc stringByAppendingFormat:@"\n训练组数: %ld 组", _groupNumber];
     desc = [desc stringByAppendingFormat:@"\n训练次数: %ld 次", _exerciseNumber];

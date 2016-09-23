@@ -48,9 +48,9 @@ typedef enum{
 @property (nonatomic) NSInteger workoutTimeLength;
 // 休息总时长（秒）
 @property (nonatomic) NSInteger restTimeLength;
-// 训练总组数（组，器械训练有效）
+// 训练总组数（组，分组训练有效）
 @property (nonatomic) NSInteger groupNumber;
-// 动作总次数（次，器械训练有效）
+// 动作总次数（次，分组训练有效）
 @property (nonatomic) NSInteger exerciseNumber;
 
 // 当前训练方案实例是不是系统内置的训练方案
