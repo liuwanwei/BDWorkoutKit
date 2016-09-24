@@ -65,21 +65,26 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
 
 // iCloud 身份信息改变消息处理
 - (void)iCloudAccountAvailablityChanged:(NSNotification *)notification{
-    WorkoutAppSetting * setting = [WorkoutAppSetting sharedInstance];
-    if (! [setting useICloudSchema]){
+    // WorkoutAppSetting * setting = [WorkoutAppSetting sharedInstance];
+    // if (! [setting useICloudSchema]){
         // 如果用户没有选择使用 iCloud，就不做处理
-        return;
-    }
+        // return;
+    // }
 
     CacheManager * cm = [CacheManager sharedInstance];
 
     id currentToken = [self currentiCloudToken];
     id oldToken = [self loadICloudToken];    
     if (currentToken) {        
-        if (oldToken && ![oldToken isEqual:currentToken]) {
-            // 切换了 iCloud 用户，清空旧数据，查询新数据
-            [cm cleanAll];            
-            [cm loadAll];
+        if (oldToken) {
+            if ([oldToken isEqual:currentToken]){
+                // 仍然是之前使用的 iCloud 账户
+                [WorkoutAppSetting sharedInstance].useICloud = @(YES);                
+            }else{
+                // 切换了 iCloud 用户，清空旧数据，查询新数据
+                [cm cleanAll];            
+                [cm loadAll];
+            }
         }else if(nil == oldToken){
             // iCloud 由不可用变为可用，再次提示用户选择存储方案
             [cm showChooseStorageSchemeView];
@@ -87,7 +92,7 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
     }else{
         // 关闭了 iCloud 服务
         UIAlertController * alert = [UIAlertController alertControllerWithTitle:@"iCloud 服务被关闭" 
-            message:@"后序产生的训练数据将会保存在手机中。"
+            message:@"生成的训练数据将会被保存到本地，不会上传到云端。"
             preferredStyle: UIAlertControllerStyleAlert];
         UIAlertAction * action = [UIAlertAction actionWithTitle:@"确定" 
             style:UIAlertActionStyleDefault
