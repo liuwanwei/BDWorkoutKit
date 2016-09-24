@@ -20,9 +20,6 @@
 @property (nonatomic, weak) WorkoutAppSetting * appSetting;
 @property (nonatomic, strong) BDiCloudManager * cloudManager;
 
-// 内存对象存储位置（外部接口不要访问）
-@property (nonatomic, strong) NSMutableArray * internalObjects;
-
 // 内存中缓存的对象的不可修改版本
 @property (nonatomic, strong, readonly) NSArray * cachedObjects;
 
@@ -31,6 +28,12 @@
 
 // 启动时加载数据
 - (void)load;
+
+// 清除所有数据
+- (void)clean;
+
+// 获取当前用到的最大的 objectId，用于创建新对象
+- (NSNumber *)maxObjectIdWithDefaultValue:(NSInteger)defaultValue;
 
 // 虚函数，需要派生类重载
 - (BDiCloudModel *)newCacheObjectWithICloudRecord:(CKRecord *)record;
@@ -69,5 +72,8 @@
 
 // 在界面主线程中展示提示信息
 - (void)showAlertWithMessage:(NSString *)message;
+
+// 内存对象总个数（绝对数量）
+- (NSInteger)cachedObjectsAbsoluteNumber;
 
 @end

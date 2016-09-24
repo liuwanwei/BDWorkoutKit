@@ -9,7 +9,9 @@
 #import "BDiCloudManager.h"
 #import "WorkoutResult.h"
 #import "WorkoutAppSetting.h"
+#import "CacheManager.h"
 #import <EXTScope.h>
+#import <UIAlertController+window.h>
 
 static NSString * const AllRecords = @"TRUEPREDICATE";
 
@@ -46,23 +48,6 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
     return self;
 }
 
-// TODO: 在有确定证据证明之前，暂不使用这个来自于猜测的代码
-// 注册应用内部的 iCloud 可用状态改变事件
-// - (void)registerIdentityChangeCustomNotification{
-//     [[NSNotificationCenter defaultCenter]
-//         addObserver: self
-//         selector: @selector(customICloudAccountChanged:)
-//         name: CustomICloudAccountChanged
-//         object: nil
-//     ];
-// }
-
-// 重新获取容器和私有数据库指针，并无确切文档，全靠推测，如果发现
-// - (void)customICloudAccountChanged:(NSNotification *)notification{
-//     _container = [CKContainer defaultCenter];
-//     _privateDatabase = [_container privateCloudDatabase];
-// }
-
 // 注册系统级的 iCloud 可用状态改变事件处理
 - (void)registerIdentityChangeNotification{
     // 只让 sharedInstance 实例侦听这个消息
@@ -86,16 +71,33 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
         return;
     }
 
+    CacheManager * cm = [CacheManager sharedInstance];
+
     id currentToken = [self currentiCloudToken];
-    id oldToken = [self loadICloudToken];
+    id oldToken = [self loadICloudToken];    
     if (currentToken) {        
         if (oldToken && ![oldToken isEqual:currentToken]) {
-            // 有改变
-            // TODO: 清空旧的数据
-            // TODO: 查询新数据
+            // 切换了 iCloud 用户，清空旧数据，查询新数据
+            [cm cleanAll];            
+            [cm loadAll];
+        }else if(nil == oldToken){
+            // iCloud 由不可用变为可用，再次提示用户选择存储方案
+            [cm showChooseStorageSchemeView];
         }
     }else{
-        
+        // 关闭了 iCloud 服务
+        UIAlertController * alert = [UIAlertController alertControllerWithTitle:@"iCloud 服务被关闭" 
+            message:@"后序产生的训练数据将会保存在手机中。"
+            preferredStyle: UIAlertControllerStyleAlert];
+        UIAlertAction * action = [UIAlertAction actionWithTitle:@"确定" 
+            style:UIAlertActionStyleDefault
+            handler:^(UIAlertAction * action){
+            }];
+        [alert addAction: action];
+        [alert show];
+
+        // 修改 App 内的 iCloud 可用标志
+        [WorkoutAppSetting sharedInstance].useICloud = @(NO);
     }
 }
 
@@ -124,7 +126,7 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
     return [[NSFileManager defaultManager] ubiquityIdentityToken];
 }
 
-// 注意：必须在主线程中调用
+// 更新 iCloud Token
 - (void)fetchICloudToken{
     // 取出当前 iCloud Token
     id currentToken = [self currentiCloudToken];
@@ -138,9 +140,9 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
     return _iCloudToken == nil ? NO : YES;
 }
 
-// TODO: 提示用户 iCloud 没有打开，并引导用户打开
+// 当前账户的 iCloud 不可用
 - (void)iCloudNotEnabledHandler{
-    
+    NSLog(@"调用 accountStatusWithCompletionHandler 失败");
 }
 
 // 查询数据最终实现代码

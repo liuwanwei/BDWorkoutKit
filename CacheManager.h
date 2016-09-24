@@ -13,8 +13,14 @@
 
 + (instancetype)sharedInstance;
 
-- (void)showQuestionInViewController:(UIViewController *)vc;
+- (void)chooseStorageScheme;
 
-- (void)askForStorageScheme:(UIViewController *)vc;
+- (void)showChooseStorageSchemeView;
+
+// 清空缓存的数据
+- (void)cleanAll;
+
+// 加载（查询）所有数据
+- (void)loadAll;
 
 @end

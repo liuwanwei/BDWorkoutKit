@@ -37,17 +37,9 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 }
 
 - (WorkoutUnit *)newUnitForPlan:(NSNumber *)workoutPlanId{
-    NSInteger maxId = 0;
-    for (WorkoutUnit * unit in self.internalObjects) {
-        if ([unit.workoutPlanId isEqualToNumber:workoutPlanId] &&
-            [unit.objectId integerValue] > maxId) {
-            maxId = [unit.objectId integerValue];
-        }
-    }
-    
     WorkoutUnit * unit = [[WorkoutUnit alloc] init];
     unit.workoutPlanId = workoutPlanId;
-    unit.objectId = @(maxId + 1);
+    unit.objectId = [self maxObjectIdWithDefaultValue:0];
     
     return unit;
 }
@@ -87,11 +79,6 @@ static NSString * const WorkoutUnitsKey = @"WorkoutUnitsKey";
 
         return [id1 compare: id2];
     }];
-}
-
-// 测试用，显示在菜单上，看缓存中总数变化是否正确
-- (NSInteger)totalUnitNumber{
-    return self.internalObjects.count;
 }
 
 // 需要重载的函数

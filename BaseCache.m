@@ -13,7 +13,10 @@
 #import <TMCache.h>
 #import <EXTScope.h>
 
-@implementation BaseCache
+@implementation BaseCache{
+    // 内存对象存储位置（外部接口不要访问）
+    NSMutableArray * _internalObjects;
+}
 
 - (instancetype)init{
     if (self = [super init]) {
@@ -37,6 +40,28 @@
     if ([self useICloudSchema]) {
         [self queryFromICloud];
     }
+}
+
+- (void)clean{
+    // 从磁盘抹除
+    TMDiskCache * cache = [TMDiskCache sharedCache];
+    [cache removeObjectForKey:[self cacheKey]];
+
+    // 从内存抹除
+    _internalObjects = nil;
+}
+
+// 获取当前最大的 objectId
+- (NSNumber *)maxObjectIdWithDefaultValue:(NSInteger)defaultValue{
+    NSNumber * maxId = @(defaultValue);
+    for (BDiCloudModel * object in _internalObjects) {
+        if (NSOrderedDescending == [object.objectId compare:maxId]) {
+            maxId = object.objectId;
+        }
+    }
+
+    NSNumber * added = [NSNumber numberWithInteger:[maxId integerValue] + 1];
+    return added;
 }
 
 - (void)queryFromICloud{    
@@ -122,6 +147,11 @@
     return [mutable copy];
 }
 
+// 测试用，显示在菜单上，看缓存中总数变化是否正确
+- (NSInteger)cachedObjectsAbsoluteNumber{
+    return _internalObjects.count;
+}
+
 // 将新建的对象添加到内存中
 - (BOOL)cacheObject:(BDiCloudModel *)newObject{
     for (BDiCloudModel * obj in _internalObjects) {
@@ -141,7 +171,7 @@
         }
     }
     
-    [self.internalObjects addObject:newObject];
+    [_internalObjects addObject:newObject];
     return YES;
 }
 
@@ -180,7 +210,7 @@
 // 批量删除内存数据
 - (void)deleteInternalObjects:(NSArray *)objects{
     for(BDiCloudModel * object in objects){
-        [self.internalObjects removeObject:object];
+        [_internalObjects removeObject:object];
     }                
 }
 
@@ -196,7 +226,7 @@
     NSMutableArray * deleteObjects = [NSMutableArray arrayWithCapacity:8];
     NSMutableArray * deleteRecordIds = [NSMutableArray arrayWithCapacity:8];
     for(BDiCloudModel * object in objects){
-        if ([self.internalObjects containsObject:object]) {                
+        if ([_internalObjects containsObject:object]) {                
             if ([self useICloudSchema]){
                 // 给内存对象打上需要删除标记，后续查询将不会返回已删除的数据
                 object.needDeleteFromICloud = @(YES);

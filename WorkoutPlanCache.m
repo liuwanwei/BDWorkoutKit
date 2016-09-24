@@ -117,17 +117,9 @@ static NSInteger MAX_BUILTIN_PLAN_ID = 10;
 }
 
 - (WorkoutPlan *)newWorkoutPlan:(WorkoutPlanType)type{
-    NSInteger maxId = MAX_BUILTIN_PLAN_ID; // 自定义训练方案 Id 从 10 开始
-    NSArray * plans = [self cachedObjects];
-    for (WorkoutPlan * plan in plans) {
-        if ([plan.objectId integerValue] > maxId) {
-            maxId = [plan.objectId integerValue];
-        }
-    }
-    
     // 取现有最大 Id + 1 作为下一个训练方案的 objectId
     WorkoutPlan * plan = [[WorkoutPlan alloc] init];
-    plan.objectId = @(maxId + 1);
+    plan.objectId = [self maxObjectIdWithDefaultValue:MAX_BUILTIN_PLAN_ID];
     plan.type = @(type);
     
     return plan;

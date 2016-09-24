@@ -12,6 +12,7 @@
 #import "WorkoutUnitCache.h"
 #import "WorkoutResultCache.h"
 #import <EXTScope.h>
+#import <UIAlertController+Window.h>
 
 @implementation CacheManager
 
@@ -28,10 +29,16 @@
 }
 
 
-- (void)loadAllTypeOfRecords{
+- (void)loadAll{
     [[WorkoutResultCache sharedInstance] load];
     [[WorkoutUnitCache sharedInstance] load];
     [[WorkoutPlanCache sharedInstance] load];        
+}
+
+- (void)cleanAll{
+    [[WorkoutResultCache sharedInstance] clean];
+    [[WorkoutUnitCache sharedInstance] clean];
+    [[WorkoutPlanCache sharedInstance] clean];
 }
 
 - (void)load{
@@ -39,7 +46,7 @@
         CKContainer * container = [[BDiCloudManager sharedInstance] container];
         [container accountStatusWithCompletionHandler:^(CKAccountStatus accountStatus, NSError * error){
             if (accountStatus == CKAccountStatusAvailable) {
-                [self loadAllTypeOfRecords];
+                [self loadAll];
             }else{
                 // TODO: 记录下面描述的情况
                 // 并行查询时（plan，unit，result），很大几率会有 1-2 次失败在 accountStatusWithCompletionHandler 里            
@@ -48,16 +55,11 @@
             }
         }];
     }else{
-        [self loadAllTypeOfRecords];
+        [self loadAll];
     }
 }
 
-/**
- *
- * 检查 App 是否安装后首次运行
- *
- */
-
+// 判断 App 是否安装后首次运行
 - (BOOL)firstLaunchFlag{
 	static NSString * LaunchKey = @"firstLaunch";
 	BOOL firstLaunch = NO;
@@ -70,43 +72,43 @@
     return firstLaunch;
 }
 
-- (void)showQuestionInViewController:(UIViewController *)vc{
-	@weakify(self);
-	UIAlertController * alert = [UIAlertController alertControllerWithTitle:@"选择数据存储方案"
-	                                                                message:@"建议您将数据保存在 iCloud 中，这样可以在每一台设备上访问到您的数据。"
-	                                                         preferredStyle:UIAlertControllerStyleAlert];
-	UIAlertAction * confirmAction = [UIAlertAction actionWithTitle:@"保存在 iCloud 上"
-	                                                         style:UIAlertActionStyleDefault
-	                                                       handler:^(UIAlertAction * action){
-	                                                           @strongify(self);
-	                                                           WorkoutAppSetting * setting = [WorkoutAppSetting sharedInstance];
-	                                                           setting.useICloud = @(YES);
-	                                                           [self load];
-	                                                       }];
-	UIAlertAction * cancelAction = [UIAlertAction actionWithTitle:@"只保存在本机"
-	                                                        style:UIAlertActionStyleCancel
-	                                                      handler:^(UIAlertAction * action){
-	                                                          @strongify(self);
-	                                                          WorkoutAppSetting * setting = [WorkoutAppSetting sharedInstance];
-	                                                          setting.useICloud = @(NO);
-	                                                          [self load];
-	                                                      }];
-	[alert addAction:confirmAction];
-	[alert addAction:cancelAction];
-	
-	[vc presentViewController:alert animated:YES completion:nil];
-}
-
-- (void)askForStorageScheme:(UIViewController *)vc{
+// App 首次运行时，提示用户选择数据存储方案
+- (void)chooseStorageScheme{
 	
 	BOOL firstLaunch = [self firstLaunchFlag];
     
     // 首次打开 App，并且 iCloud 可用时，提示用户是否使用 iCloud 存储数据
     if (firstLaunch && [[BDiCloudManager sharedInstance] iCloudAvailable]) {
-		[self showQuestionInViewController:vc];
+		[self showChooseStorageSchemeView];
     }else{
         [self load];        
     }
+}
+
+// 显示对话框，让用户选择数据存储方案
+- (void)showChooseStorageSchemeView{
+    @weakify(self);
+    UIAlertController * alert = [UIAlertController alertControllerWithTitle:@"选择数据存储方案"
+                                                                    message:@"建议您将数据保存在 iCloud 中，这样可以在每一台设备上访问到您的数据。"
+                                                             preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction * confirmAction = [UIAlertAction actionWithTitle:@"保存在 iCloud 上"
+                                                             style:UIAlertActionStyleDefault
+                                                           handler:^(UIAlertAction * action){
+                                                               @strongify(self);
+                                                               [WorkoutAppSetting sharedInstance].useICloud = @(YES);
+                                                               [self load];
+                                                           }];
+    UIAlertAction * cancelAction = [UIAlertAction actionWithTitle:@"只保存在本机"
+                                                            style:UIAlertActionStyleCancel
+                                                          handler:^(UIAlertAction * action){
+                                                              @strongify(self);
+                                                              [WorkoutAppSetting sharedInstance].useICloud = @(NO);
+                                                              [self load];
+                                                          }];
+    [alert addAction:confirmAction];
+    [alert addAction:cancelAction];
+    
+    [alert show];
 }
 
 @end
