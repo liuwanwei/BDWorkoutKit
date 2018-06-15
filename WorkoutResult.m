@@ -83,4 +83,35 @@ static NSString * const TotalNumber = @"totalNumber";
     }
 }
 
+- (NSString *)simpleDesc{
+    NSString * descStr = @"";
+    
+    if (self.groupNumber) {
+        NSString * str = [NSString stringWithFormat:@"锻炼 %@ 组动作",self.groupNumber];
+        descStr = [descStr stringByAppendingString:str];
+    }
+    
+    if (self.consumedTime) {
+        NSInteger mintue = [self.consumedTime integerValue]/60;
+        if (0 == mintue) {
+            mintue = 1;
+        }
+        NSString * str;
+        if (self.groupNumber) {
+            str = [NSString stringWithFormat:@"，用时 %ld 分钟",mintue];
+        }else {
+            str = [NSString stringWithFormat:@"用时 %ld 分钟",mintue];
+        }
+        
+        descStr = [descStr stringByAppendingString:str];
+    }
+    
+    if (self.totalNumber) {
+        NSString * str = [NSString stringWithFormat:@"，跳绳 %@ 次",self.totalNumber];
+        descStr = [descStr stringByAppendingString:str];
+    }
+    
+    return descStr;
+}
+
 @end

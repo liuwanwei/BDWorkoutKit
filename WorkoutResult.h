@@ -58,4 +58,9 @@ extern NSInteger MaxWorkoutUnitCount;
 
 - (BOOL)resultForUnit:(NSInteger)unitIndex;
 
+/**
+ * 返回训练的简要描述信息
+ */
+- (NSString *)simpleDesc;
+
 @end
