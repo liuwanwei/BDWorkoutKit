@@ -42,7 +42,7 @@ static NSInteger MAX_BUILTIN_PLAN_ID = 10;
 
 // 获取 App 内置的 4 种固定训练方案
 + (NSArray *)builtInWorkoutPlans{
-    NSDictionary * rootDict = [Utils loadJsonFileFromBundel:@"HiitTypes"];
+    NSDictionary * rootDict = [BDUtils loadJsonFileFromBundel:@"HiitTypes"];
     if (rootDict) {
         NSArray * dicts = rootDict[@"types"];
         return [WorkoutPlan objectArrayWithKeyValuesArray:dicts];
@@ -68,7 +68,7 @@ static NSInteger MAX_BUILTIN_PLAN_ID = 10;
         for (WorkoutPlan * plan in [WorkoutPlanCache builtInWorkoutPlans]) {
             if ([plan.objectId isEqualToNumber: workoutPlanId]) {
                 _currentWorkoutPlan = plan;
-                NSDictionary * rootDict = [Utils loadJsonFileFromBundel:_currentWorkoutPlan.configFile];
+                NSDictionary * rootDict = [BDUtils loadJsonFileFromBundel:_currentWorkoutPlan.configFile];
                 if (rootDict) {
                     NSArray * dicts = rootDict[@"workouts"];
                     _workoutUnits = [WorkoutUnit objectArrayWithKeyValuesArray:dicts];
