@@ -41,23 +41,29 @@
     [[WorkoutPlanCache sharedInstance] clean];
 }
 
-- (void)load{
-    if ([[WorkoutAppSetting sharedInstance] useICloudSchema]){
-        CKContainer * container = [[BDiCloudManager sharedInstance] container];
-        [container accountStatusWithCompletionHandler:^(CKAccountStatus accountStatus, NSError * error){
-            if (accountStatus == CKAccountStatusAvailable) {
-                [self loadAll];
-            }else{
-                // TODO: 记录下面描述的情况
-                // 并行查询时（plan，unit，result），很大几率会有 1-2 次失败在 accountStatusWithCompletionHandler 里            
-                // accountStatus 会等于 CKAccountStatusNoAccount
-                NSLog(@"查询数据出现 iCloud 账户不可用: %@", @(accountStatus));
-            }
-        }];
-    }else{
-        [self loadAll];
-    }
-}
+
+
+/**
+ 加载数据，只是对 loadAll 的调用进行了一层封装，调用前判断 iCloud 是否可用，
+ 避免并发调用三种 CacheManager.load 时，造成 accountStatusWithCompletionHandler 失败的问题。
+ */
+//- (void)loadData{
+//    if ([[WorkoutAppSetting sharedInstance] useICloudSchema]){
+//        CKContainer * container = [[BDiCloudManager sharedInstance] container];
+//        [container accountStatusWithCompletionHandler:^(CKAccountStatus accountStatus, NSError * error){
+//            if (accountStatus == CKAccountStatusAvailable) {
+//                [self loadAll];
+//            }else{
+//                // TODO: 记录下面描述的情况
+//                // 并行查询时（plan，unit，result），很大几率会有 1-2 次失败在 accountStatusWithCompletionHandler 里
+//                // accountStatus 会等于 CKAccountStatusNoAccount
+//                NSLog(@"查询数据出现 iCloud 账户不可用: %@", @(accountStatus));
+//            }
+//        }];
+//    }else{
+//        [self loadAll];
+//    }
+//}
 
 // 判断 App 是否安装后首次运行
 - (BOOL)firstLaunchFlag{
@@ -81,7 +87,7 @@
     if (firstLaunch && [[BDiCloudManager sharedInstance] iCloudAvailable]) {
 		[self showChooseStorageSchemeView];
     }else{
-        [self load];        
+        [self loadAll];
     }
 }
 
@@ -96,14 +102,14 @@
                                                            handler:^(UIAlertAction * action){
                                                                @strongify(self);
                                                                [WorkoutAppSetting sharedInstance].useICloud = @(YES);
-                                                               [self load];
+                                                               [self loadAll];
                                                            }];
     UIAlertAction * cancelAction = [UIAlertAction actionWithTitle:@"只保存在本机"
                                                             style:UIAlertActionStyleCancel
                                                           handler:^(UIAlertAction * action){
                                                               @strongify(self);
                                                               [WorkoutAppSetting sharedInstance].useICloud = @(NO);
-                                                              [self load];
+                                                              [self loadAll];
                                                           }];
     [alert addAction:confirmAction];
     [alert addAction:cancelAction];
