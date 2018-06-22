@@ -65,48 +65,45 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
 
 // iCloud 身份信息改变消息处理
 - (void)iCloudAccountAvailablityChanged:(NSNotification *)notification{
-    // WorkoutAppSetting * setting = [WorkoutAppSetting sharedInstance];
-    // if (! [setting useICloudSchema]){
+    WorkoutAppSetting * setting = [WorkoutAppSetting sharedInstance];
+    if (! [setting useICloudSchema]){
         // 如果用户没有选择使用 iCloud，就不做处理
-        // return;
-    // }
+        return;
+    }
 
-    CacheManager * cm = [CacheManager sharedInstance];
-
-    id currentToken = [self currentiCloudToken];
-    id oldToken = [self loadICloudToken];    
-    if (currentToken) {        
-        if (oldToken) {
-            if ([oldToken isEqual:currentToken]){
-                // 仍然是之前使用的 iCloud 账户
-                [WorkoutAppSetting sharedInstance].useICloud = @(YES);                
-            }else{
-                // 切换了 iCloud 用户，清空旧数据，查询新数据
-                [cm cleanAll];            
-                [cm loadAll];
-            }
-        }else if(nil == oldToken){
-            // iCloud 由不可用变为可用，再次提示用户选择存储方案
-            [cm showChooseStorageSchemeView];
-        }
+    id currentToken = [self getSystemICloudToken];        
+    if (currentToken) {
+        /**
+         *
+         * 检测到 iCloud 服务被打开
+         * 可以推测此前 iCloud 服务是关闭状态，用户 iCloud 开关肯定也是关闭状态，所以不需要做处理
+         */
     }else{
-        // 关闭了 iCloud 服务
+
+        /**
+         * 检测到 iCloud 服务被关闭
+         */
+        
+        // 弹出 iCloud 服务关闭提示
         UIAlertController * alert = [UIAlertController alertControllerWithTitle:@"iCloud 服务被关闭" 
             message:@"生成的训练数据将会被保存到本地，不会上传到云端。"
             preferredStyle: UIAlertControllerStyleAlert];
         UIAlertAction * action = [UIAlertAction actionWithTitle:@"确定" 
             style:UIAlertActionStyleDefault
-            handler:^(UIAlertAction * action){
+            handler:^(UIAlertAction * action){                
             }];
         [alert addAction: action];
         [alert show];
 
         // 修改 App 内的 iCloud 可用标志
-        [WorkoutAppSetting sharedInstance].useICloud = @(NO);
+        setting.useICloud = @(NO);
     }
+    
+    [self updateICloudToken:currentToken];
 }
 
 // 取出缓存在本地的 iCloud token
+// 由于不再支持对比 iCloud Token 是否变化，所以该接口不再用到
 - (id)loadICloudToken{
     NSData * data = [[NSUserDefaults standardUserDefaults] objectForKey:iCloudTokenKey];
     if (data) {
@@ -119,24 +116,30 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
 // 将 iCloud token 缓存在本地
 - (void)syncICloudTokenToDisk:(id)token{
     if (token) {
-        NSData *newTokenData = [NSKeyedArchiver archivedDataWithRootObject: token];
-        [[NSUserDefaults standardUserDefaults] setObject: newTokenData forKey: iCloudTokenKey];
+        NSData * tokenData = [NSKeyedArchiver archivedDataWithRootObject: token];
+        [[NSUserDefaults standardUserDefaults] setObject: tokenData forKey: iCloudTokenKey];
     }else{
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:iCloudTokenKey];
     }
 }
 
 // 取出当前 iCloud Token
-- (id)currentiCloudToken{
+- (id)getSystemICloudToken{
     return [[NSFileManager defaultManager] ubiquityIdentityToken];
 }
 
-// 更新 iCloud Token
-- (void)fetchICloudToken{
-    // 取出当前 iCloud Token
-    id currentToken = [self currentiCloudToken];
+// 从系统获取当前 iCloud Token，更新到内存和本地文件存储中
+- (id)updateICloudToken:(id)newToken{
+    id currentToken = newToken;
+    if (currentToken == nil) {
+        // 取出当前 iCloud Token
+        currentToken = [self getSystemICloudToken];
+    }
+    
     _iCloudToken = currentToken;    
     [self syncICloudTokenToDisk:currentToken];
+    
+    return currentToken;
 }
 
 // 判断用户是否登录了 iCloud
@@ -163,15 +166,15 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
             NSLog(@"查询 %@ 出现问题: %@", type, error);
         }else{
             NSLog(@"查询 %@ 数据成功", type);
-            if (_recordsReceivedBlock) {
-                _recordsReceivedBlock(results);
+            if (self->_recordsReceivedBlock) {
+                self->_recordsReceivedBlock(results);
             }
         }
     }];
 }
 
 - (void)queryRecordsWithCompletionBlock:(RecordsReceivedBLock)block{
-    _recordsReceivedBlock = block;
+    self->_recordsReceivedBlock = block;
     [self finalQueryRecord];
 }
 
@@ -183,13 +186,13 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
         @strongify(self);
         
         if (accountStatus == CKAccountStatusAvailable) {
-            [_privateDatabase saveRecord:record completionHandler:^(CKRecord * record, NSError * error){
+            [self->_privateDatabase saveRecord:record completionHandler:^(CKRecord * record, NSError * error){
                 if (error) {
                     NSLog(@"iCloud/CKRecord 添加失败：An error occured in %@: %@", NSStringFromSelector(_cmd), error);
                 }else{
                     NSLog(@"添加数据（iCloud/CKRecord）数据成功");                    
-                    if (_recordSavedBlock) {
-                        _recordSavedBlock(record);
+                    if (self->_recordSavedBlock) {
+                        self->_recordSavedBlock(record);
                     }
                 }
             }];
