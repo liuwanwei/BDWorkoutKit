@@ -12,7 +12,7 @@
 #import "WorkoutUnitCache.h"
 #import "WorkoutResultCache.h"
 #import <EXTScope.h>
-#import <UIAlertController+Window.h>
+//#import <UIAlertController+Window.h>
 
 @implementation CacheManager
 
@@ -79,20 +79,20 @@
 }
 
 // App 首次运行时，提示用户选择数据存储方案
-- (void)chooseStorageScheme{
+- (void)chooseStorageScheme:(UIViewController *)viewController{
 	
 	BOOL firstLaunch = [self firstLaunchFlag];
     
     // 首次打开 App，并且 iCloud 可用时，提示用户是否使用 iCloud 存储数据
     if (firstLaunch && [[BDiCloudManager sharedInstance] iCloudAvailable]) {
-		[self showChooseStorageSchemeView];
+        [self showChooseStorageSchemeView:viewController];
     }else{
         [self loadAll];
     }
 }
 
 // 显示对话框，让用户选择数据存储方案
-- (void)showChooseStorageSchemeView{
+- (void)showChooseStorageSchemeView:(UIViewController *)viewController{
     @weakify(self);
     UIAlertController * alert = [UIAlertController alertControllerWithTitle:@"选择数据存储方案"
                                                                     message:@"建议您将数据保存在 iCloud 中，这样可以在每一台设备上访问到您的数据。"
@@ -114,7 +114,7 @@
     [alert addAction:confirmAction];
     [alert addAction:cancelAction];
     
-    [alert show];
+    [viewController presentViewController:alert animated:YES completion:null];
 }
 
 @end

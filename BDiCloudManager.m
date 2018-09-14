@@ -49,6 +49,7 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
 }
 
 // 注册系统级的 iCloud 可用状态改变事件处理
+// TODO: 可以隐藏到黑盒子中，在模块初始化时自动完成，不必由模块使用者调用
 - (void)registerIdentityChangeNotification{
     // 只让 sharedInstance 实例侦听这个消息
     if (self != [BDiCloudManager sharedInstance]){
@@ -129,6 +130,7 @@ static NSString * iCloudTokenKey = @"cn.buddysoft.hiitrope.UbiquityIdentityToken
 }
 
 // 从系统获取当前 iCloud Token，更新到内存和本地文件存储中
+// TODO: 也应隐藏起来，不比让调用者显式调用
 - (id)updateICloudToken:(id)newToken{
     id currentToken = newToken;
     if (currentToken == nil) {
