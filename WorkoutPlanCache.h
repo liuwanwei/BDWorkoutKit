@@ -22,6 +22,9 @@
 #import "BaseCache.h"
 #import "WorkoutPlan.h"
 
+// 当前训练方案改变时，会发送这个通知消息，可以通过 NotificationCenter 接收
+#define kUPDATE_WORKOUT_MODE_MESSAGE    @"kUpdateWorkoutModeMessage"
+
 @interface WorkoutPlanCache : BaseCache
 
 // 当前训练方案的训练单元数组(WorkoutUnit)

@@ -9,9 +9,9 @@
 #import "BDiCloudManager.h"
 #import "WorkoutResult.h"
 #import "WorkoutAppSetting.h"
+#import "categories/UIAlertController+Window.h"
 #import "CacheManager.h"
 #import <EXTScope.h>
-#import <UIAlertController+window.h>
 
 static NSString * const AllRecords = @"TRUEPREDICATE";
 

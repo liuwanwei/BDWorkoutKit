@@ -13,9 +13,9 @@
 
 + (instancetype)sharedInstance;
 
-- (void)chooseStorageScheme:(UIViewController *)viewController;
+- (void)chooseStorageScheme;
 
-- (void)showChooseStorageSchemeView:(UIViewController *)viewController;
+- (void)showChooseStorageSchemeView;
 
 // 清空缓存的数据
 - (void)cleanAll;
