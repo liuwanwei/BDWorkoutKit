@@ -28,17 +28,43 @@
     return sSharedInstance;
 }
 
+- (instancetype)init{
+    if (self = [super init]) {
+        _planCacheEnabled = @(YES);
+        _unitCacheEnabled = @(YES);
+        _resultCacheEnabled = @(YES);
+    }
+    
+    return self;
+}
+
 
 - (void)loadAll{
-    [[WorkoutResultCache sharedInstance] load];
-    [[WorkoutUnitCache sharedInstance] load];
-    [[WorkoutPlanCache sharedInstance] load];        
+    if ([_resultCacheEnabled boolValue]) {
+        [[WorkoutResultCache sharedInstance] load];
+    }
+    
+    if ([_unitCacheEnabled boolValue]) {
+        [[WorkoutUnitCache sharedInstance] load];
+    }
+    
+    if ([_planCacheEnabled boolValue]) {
+        [[WorkoutPlanCache sharedInstance] load];
+    }
 }
 
 - (void)cleanAll{
-    [[WorkoutResultCache sharedInstance] clean];
-    [[WorkoutUnitCache sharedInstance] clean];
-    [[WorkoutPlanCache sharedInstance] clean];
+    if ([_resultCacheEnabled boolValue]) {
+        [[WorkoutResultCache sharedInstance] clean];
+    }
+
+    if ([_unitCacheEnabled boolValue]) {
+        [[WorkoutUnitCache sharedInstance] clean];
+    }
+
+    if ([_planCacheEnabled boolValue]) {
+        [[WorkoutPlanCache sharedInstance] clean];
+    }
 }
 
 

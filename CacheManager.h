@@ -11,6 +11,11 @@
 
 @interface CacheManager : NSObject
 
+// 通过开关控制三种缓存的使用，默认全都打开
+@property (nonatomic, strong) NSNumber * planCacheEnabled;
+@property (nonatomic, strong) NSNumber * unitCacheEnabled;
+@property (nonatomic, strong) NSNumber * resultCacheEnabled;
+
 + (instancetype)sharedInstance;
 
 - (void)chooseStorageScheme;
