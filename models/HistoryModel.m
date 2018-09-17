@@ -45,9 +45,12 @@
 
 - (NSUInteger)resultCountForThisWeek{
     NSInteger count = 0;
-    NSInteger weekOfYear = [[[NSDate alloc] init] weekOfYear];
+    NSDate * today = [[NSDate alloc] init];
+    NSInteger weekOfYear = [today weekOfYear];
+    NSInteger year = [today year];
     for (WorkoutResult * result in _results) {
-        if ([result.workoutTime weekOfYear] == weekOfYear) {
+        if ([result.workoutTime weekOfYear] == weekOfYear &&
+            [result.workoutTime year] == year) {
             count ++;
         }
     }

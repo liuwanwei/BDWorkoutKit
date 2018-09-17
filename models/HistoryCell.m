@@ -32,7 +32,7 @@
 }
 
 - (void)setWorkoutResult:(WorkoutResult *)workoutResult{
-    self.planName.text = workoutResult.workoutTitle;
+    self.planName.text = workoutResult.workoutTitle != nil ? workoutResult.workoutTitle : @"默认训练";
     
     NSDateFormatter * formatter = [[NSDateFormatter alloc] init];
     formatter.locale = [NSLocale localeWithLocaleIdentifier:@"zh_CN"];
